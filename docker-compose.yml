@@ -1,0 +1,33 @@
+# =============================================================================
+# Projeto: Finance AI (Agente Financeiro no WhatsApp)
+# Serviços auxiliares próprios deste projeto:
+#   - financas-pdf   : gera relatórios PDF
+#   - financas-media : fallback local de mídia (OCR Tesseract + Vosk)
+# Ambos entram na mesma rede Docker do n8n / Evolution API.
+# Configure o nome dessa rede em FINANCAS_NETWORK (arquivo .env).
+# =============================================================================
+services:
+  financas-pdf:
+    build: ./pdf-service
+    image: financas-pdf:latest
+    container_name: financas-pdf
+    restart: always
+    expose:
+      - "3000"
+    networks:
+      - n8n
+
+  financas-media:
+    build: ./media-service
+    image: financas-media:latest
+    container_name: financas-media
+    restart: always
+    expose:
+      - "3000"
+    networks:
+      - n8n
+
+networks:
+  n8n:
+    external: true
+    name: ${FINANCAS_NETWORK:-n8n_network}

@@ -1,0 +1,12 @@
+{
+  "name": "financas-pdf",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gerador de relatórios PDF do Agente Financeiro",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pdfkit": "^0.15.2"
+  }
+}
