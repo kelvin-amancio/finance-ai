@@ -10,7 +10,7 @@
           "width": 420,
           "color": 7
         },
-        "id": "918dad12-09ab-4e06-bd5a-cb158a1f44bb",
+        "id": "9f9b1f98-a354-4dc5-af8e-48275457fbc2",
         "name": "Nota",
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
@@ -26,7 +26,7 @@
           "responseMode": "onReceived",
           "options": {}
         },
-        "id": "faace14f-d1d7-438d-9478-6d0abfcd6b83",
+        "id": "81795257-30ac-4314-824f-4c4651fd60a1",
         "name": "Receber WhatsApp",
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2,
@@ -34,13 +34,13 @@
           0,
           0
         ],
-        "webhookId": "3ce9525b-9ac1-45ee-aa49-19421f575d55"
+        "webhookId": "ea31b01f-1550-4d7c-b2d2-fdeb6b1ae24f"
       },
       {
         "parameters": {
           "jsCode": "const first = $input.first().json;\nconst body = first.body ?? first;\nconst data = body?.data ?? {};\nconst key = data.key ?? {};\nconst remoteJid = key.remoteJid ?? '';\nconst fromMe = key.fromMe === true;\nconst isGroup = remoteJid.endsWith('@g.us');\n// WhatsApp novo usa LID (@lid): identidade = telefone (senderPn/remoteJidAlt);\n// envio = remoteJid original (responder pelo LID e o que entrega de fato).\nlet numero = remoteJid.replace(/[^0-9]/g, '');\nlet jidEnvio = numero;\nif (remoteJid.endsWith('@lid')) {\n  const pn = key.senderPn || key.remoteJidAlt || '';\n  if (pn) numero = pn.replace(/[^0-9]/g, '');\n  jidEnvio = remoteJid;\n}\nconst msg = data.message ?? {};\nlet texto = msg.conversation\n  || msg.extendedTextMessage?.text\n  || msg.imageMessage?.caption\n  || msg.videoMessage?.caption\n  || msg.buttonsResponseMessage?.selectedDisplayText\n  || msg.listResponseMessage?.title\n  || '';\ntexto = String(texto).trim();\nconst mtype = data.messageType || '';\nlet tipoMsg = 'texto';\nif (mtype === 'audioMessage' || msg.audioMessage) tipoMsg = 'audio';\nelse if (mtype === 'imageMessage' || msg.imageMessage) tipoMsg = 'imagem';\nconst messageId = key.id ?? `noid-${Date.now()}`;\nconst valida = !fromMe && !isGroup && numero.length >= 10 && numero.length <= 15 && (!!texto || tipoMsg !== 'texto');\nreturn [{ json: { valida, numero, jidEnvio, texto, tipoMsg, keyRaw: key, pushName: data.pushName ?? '', messageId, isGroup, fromMe } }];"
         },
-        "id": "a36b3530-3b5f-4cbb-b4a8-e89bed6ec4f6",
+        "id": "960dd703-02bc-4a68-a494-c0f370d0b7a9",
         "name": "Extrair mensagem",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -60,7 +60,7 @@
             },
             "conditions": [
               {
-                "id": "20d6067c-3655-40ed-abb6-bddf51c84617",
+                "id": "971fc9ac-86a1-4d72-b792-21691a3d8a5a",
                 "leftValue": "={{ $json.valida }}",
                 "rightValue": "",
                 "operator": {
@@ -74,7 +74,7 @@
           },
           "options": {}
         },
-        "id": "03917de3-6f1b-400f-bf67-6c874024516f",
+        "id": "8879ce1d-5018-4265-8fc9-38072ba75938",
         "name": "Mensagem válida?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
@@ -85,7 +85,7 @@
       },
       {
         "parameters": {},
-        "id": "1c35d61c-cf8b-460b-92a3-19cb5a45c400",
+        "id": "8f675a5a-5fe8-4937-9d61-7dbf937863c9",
         "name": "Ignorar",
         "type": "n8n-nodes-base.noOp",
         "typeVersion": 1,
@@ -101,7 +101,7 @@
           "expire": true,
           "ttl": 86400
         },
-        "id": "a833c139-aaab-4f45-82f5-294b22b7a6fb",
+        "id": "e18b562c-425c-4074-8fff-3edd4694ee34",
         "name": "Dedup Redis",
         "type": "n8n-nodes-base.redis",
         "typeVersion": 1,
@@ -120,7 +120,7 @@
         "parameters": {
           "jsCode": "const msg = $('Extrair mensagem').first().json;\nconst incr = $input.first().json;\nconst contagem = Number(Object.values(incr)[0] ?? 1);\nreturn [{ json: { ...msg, contagem, duplicada: contagem > 1 } }];"
         },
-        "id": "60ecefe1-8794-4952-9835-7114521b5156",
+        "id": "5204bcc2-c832-4612-8428-2ce0d0ee0be6",
         "name": "Contexto",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -140,7 +140,7 @@
             },
             "conditions": [
               {
-                "id": "0f2d57ef-4bc4-4260-b3d2-5a65bfccf9b5",
+                "id": "ae15f327-e518-4c59-b775-5bfb882aa496",
                 "leftValue": "={{ !$json.duplicada }}",
                 "rightValue": "",
                 "operator": {
@@ -154,7 +154,7 @@
           },
           "options": {}
         },
-        "id": "570a243d-35ab-49df-ae26-6dd87b26d187",
+        "id": "221df623-41ed-4ee7-8f3f-ee839dc83419",
         "name": "Não duplicada?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
@@ -165,7 +165,7 @@
       },
       {
         "parameters": {},
-        "id": "9e28873a-c26a-4f85-b8dd-cde0c77963b2",
+        "id": "0cf24bfc-849b-425d-a26c-19557fb6f70b",
         "name": "Ignorar duplicada",
         "type": "n8n-nodes-base.noOp",
         "typeVersion": 1,
@@ -182,7 +182,7 @@
             "queryReplacement": "={{ [ $('Contexto').first().json.numero, $('Contexto').first().json.pushName, $('Contexto').first().json.texto, $('Contexto').first().json.jidEnvio ] }}"
           }
         },
-        "id": "a820085d-3c80-4604-84bf-efb41113705c",
+        "id": "6bef81b2-4401-48da-b9ca-03de20837774",
         "name": "Verificar usuário",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -208,7 +208,7 @@
             },
             "conditions": [
               {
-                "id": "65ee7748-925e-42b2-a50f-21bb07fbe120",
+                "id": "944399a3-34db-4780-a4e9-c2e655538893",
                 "leftValue": "={{ $json.cadastrado === true }}",
                 "rightValue": "",
                 "operator": {
@@ -222,7 +222,7 @@
           },
           "options": {}
         },
-        "id": "5f261882-71e2-4bcc-bf6b-d13f36406d4c",
+        "id": "c4ca6e92-ed08-4e9d-b259-ff7fd9b56460",
         "name": "Cadastrado?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
@@ -235,7 +235,7 @@
         "parameters": {
           "jsCode": "const r = $input.first().json;\nconst nome = (($('Contexto').first().json.pushName) || '').split(' ')[0];\nlet text;\nif (r.registrou_agora) {\n  text = `🎉 *Bem-vindo(a)${nome ? ', ' + nome : ''}!*\\n\\nEu sou o seu *Agente Financeiro* e vou te ajudar a controlar seus gastos direto pelo WhatsApp — simples e prático.\\n\\n*Como usar:*\\n• Registrar: _\"gastei 25 no almoço\"_\\n• Receita: _\"recebi 3000 de salário\"_\\n• Resumo: _\"quanto gastei essa semana?\"_\\n• Dicas: _\"onde posso economizar?\"_\\n• Relatório: _\"me manda um excel\"_ ou _\"quero um pdf\"_\\n• Limites: _\"definir limite de mercado 500\"_\\n\\nBora começar? Me conta um gasto de hoje! 🚀`;\n} else {\n  text = `🔒 *Acesso restrito.*\\n\\nEste é um serviço privado do *Agente Financeiro*.\\nPara começar, me envie o *código de convite* que você recebeu. 😉`;\n}\nreturn [{ json: { text } }];"
         },
-        "id": "a545f799-85c7-428c-8e67-48eacaaaa49b",
+        "id": "43b85cb3-1806-448b-80b8-8de84b1b24b3",
         "name": "Menu de acesso",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -248,7 +248,7 @@
         "parameters": {
           "jsCode": "const r = $input.first().json;\nconst ctx = $('Contexto').first().json;\nconst t = (ctx.texto || '').trim();\nconst admin = !!(r.usuario && r.usuario.admin);\nlet codigo = null;\nif (admin) {\n  const temGatilho = /(trocar|mudar|alterar|definir|atualizar|setar|novo|nova)\\s+(o\\s+|a\\s+)?(c[oó]digo|convite)/i.test(t)\n    || /^(c[oó]digo|convite)\\b/i.test(t);\n  if (temGatilho) {\n    const ignores = /^(codigo|c[oó]digo|convite|trocar|mudar|alterar|definir|atualizar|setar|novo|nova|para|pro|pra|de|do|da|meu|minha|o|a|os|as|e|é|eh)$/i;\n    const tokens = t.split(/\\s+/).filter((w) => /^[A-Za-z0-9@#_.-]{4,40}$/.test(w) && !ignores.test(w));\n    if (tokens.length) codigo = tokens[tokens.length - 1].toUpperCase();\n  }\n}\nreturn [{ json: { ...r, admin_comando: !!codigo, codigo } }];"
         },
-        "id": "eaff07a9-ec10-4973-89aa-bbfc1fcb2cee",
+        "id": "2f98885a-82e6-434c-9d97-a707065500fc",
         "name": "Checar comando admin",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -268,7 +268,7 @@
             },
             "conditions": [
               {
-                "id": "41c19530-0d61-463d-ae57-a473c049afde",
+                "id": "4796002d-4cc7-4717-b953-8d4f89e25b76",
                 "leftValue": "={{ $json.admin_comando === true }}",
                 "rightValue": "",
                 "operator": {
@@ -282,7 +282,7 @@
           },
           "options": {}
         },
-        "id": "bcb9a528-680c-4fc3-86de-1812a855e8e6",
+        "id": "bbcc1525-5afe-4a25-9461-c19f18619295",
         "name": "Comando admin?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
@@ -299,7 +299,7 @@
             "queryReplacement": "={{ [ $json.codigo ] }}"
           }
         },
-        "id": "71727763-23e4-4fb8-b810-c0408a9d2303",
+        "id": "6bb9abf3-9898-4533-a561-018e31566d51",
         "name": "Atualizar convite",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -325,7 +325,7 @@
             },
             "conditions": [
               {
-                "id": "4cada0ac-4d56-4b30-88e2-b281b8870989",
+                "id": "fc698702-bf15-46f0-8d63-78bd00855426",
                 "leftValue": "={{ $('Contexto').first().json.tipoMsg !== 'texto' }}",
                 "rightValue": "",
                 "operator": {
@@ -339,7 +339,7 @@
           },
           "options": {}
         },
-        "id": "6dd91f4f-cbbc-4e0c-ae56-2594b0ca9150",
+        "id": "1b85ef73-cb81-4563-bb56-bffe09101b42",
         "name": "Tem mídia?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
@@ -366,7 +366,7 @@
           "jsonBody": "={{ JSON.stringify({ message: { key: $('Contexto').first().json.keyRaw } }) }}",
           "options": {}
         },
-        "id": "d2b2de0c-253b-425e-bedc-4c7dff6b74b0",
+        "id": "2b04414a-84b3-453d-baa0-e50b1c247c8d",
         "name": "Buscar mídia",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
@@ -387,7 +387,7 @@
             },
             "conditions": [
               {
-                "id": "02fc13d7-beef-4b28-a814-f172b137729a",
+                "id": "adfd457d-761a-430b-a57c-7335320bc254",
                 "leftValue": "={{ $('Contexto').first().json.tipoMsg === 'audio' }}",
                 "rightValue": "",
                 "operator": {
@@ -401,7 +401,7 @@
           },
           "options": {}
         },
-        "id": "89ddcca5-0b57-40a6-b918-54689520890d",
+        "id": "61001acc-3c26-4a69-a993-b5639c6d8992",
         "name": "É áudio?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
@@ -414,7 +414,7 @@
         "parameters": {
           "jsCode": "const src = $input.first().json;\nconst b64 = src.base64 || '';\n// valida sem o sufixo \"; codecs=opus\" e com extensao correta no multipart\nlet mimetype = String(src.mimetype || 'audio/ogg').split(';')[0].trim() || 'audio/ogg';\nconst extMap = { 'audio/ogg':'ogg','audio/opus':'opus','audio/wav':'wav','audio/x-wav':'wav','audio/mpeg':'mp3','audio/mp3':'mp3','audio/mp4':'mp4','audio/m4a':'m4a','audio/webm':'webm','audio/flac':'flac' };\nconst fileName = 'audio.' + (extMap[mimetype] || 'ogg');\nif (!b64) return [{ json: { semMidia: true } }];\nreturn [{ json: {}, binary: { data: { data: b64, mimeType: mimetype, fileName } } }];"
         },
-        "id": "47fb6304-d0e8-4d9b-9621-23bacbe173f0",
+        "id": "5c2957e6-6d3f-44c5-83c2-5b2eba681250",
         "name": "Preparar áudio",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -447,7 +447,7 @@
           },
           "options": {}
         },
-        "id": "124d9d29-9b2e-4c47-bfce-3d85028f44d1",
+        "id": "016fd15a-8a0b-4bc9-ba6f-1e8fa16a0c27",
         "name": "Transcrever",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
@@ -474,7 +474,7 @@
             },
             "conditions": [
               {
-                "id": "f800d4c5-8935-4822-8f84-8a8d9873e84c",
+                "id": "7f89637f-705a-4fe8-91c4-22e07a9b8da9",
                 "leftValue": "={{ ($json.text || '').trim().length > 0 }}",
                 "rightValue": "",
                 "operator": {
@@ -488,7 +488,7 @@
           },
           "options": {}
         },
-        "id": "22f5c6c6-adea-4428-aa31-c4e9fd433ebd",
+        "id": "dd60ffea-ed49-40cf-9337-cc842afdf81a",
         "name": "Tem transcrição?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
@@ -508,7 +508,7 @@
             "timeout": 120000
           }
         },
-        "id": "6a0d3204-63c0-464f-a28e-b1b10580d44f",
+        "id": "3c77b156-d6ae-4ffa-8c5f-521156c67c0a",
         "name": "Transcrever local (Vosk)",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
@@ -522,7 +522,7 @@
         "parameters": {
           "jsCode": "const ctx = $('Contexto').first().json;\nconst cur = $input.first().json || {};\nconst transcricao = (typeof cur.text === 'string') ? cur.text.trim() : '';\nconst textoFinal = transcricao || ctx.texto || '';\nreturn [{ json: { ...ctx, textoFinal } }];"
         },
-        "id": "343c84c5-e598-4915-a0f4-672a14017a15",
+        "id": "33f7e468-1703-4378-8fa9-10f2e1d1f80e",
         "name": "Definir texto",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -535,7 +535,7 @@
         "parameters": {
           "jsCode": "const m = $input.first().json || {};\nconst b64 = m.base64 || '';\nconst mimetype = m.mimetype || 'image/jpeg';\nconst GM = $env.GEMINI_API_KEY || '';\nconst OR = $env.OPENROUTER_API_KEY || '';\nconst prompt = \"Você é um extrator de gastos de um agente financeiro. Analise a imagem (nota fiscal, recibo, comprovante ou print de app/banco) e extraia os gastos. Regras: se for UMA compra/nota, registre UMA despesa com o VALOR TOTAL; se for uma lista de transações, registre CADA transação. Ignore transferências entre contas próprias. Se houver parcelamento (ex.: '7/12', '10x de R$ 50', '12x'), informe parcelas. Em parcela: 'valor' = valor da parcela; 'valor_total' = total da compra (parcela x parcelas); 'parcelas' = {\\\"atual\\\":7,\\\"total\\\":12}. Categorias válidas: Alimentação, Mercado, Transporte, Moradia, Contas fixas, Saúde, Educação, Lazer, Compras, Assinaturas, Viagem, Pets, Outros. Responda SOMENTE JSON: {\\\"gastos\\\":[{\\\"descricao\\\":\\\"...\\\",\\\"valor\\\":0.00,\\\"valor_total\\\":null,\\\"parcelas\\\":{\\\"atual\\\":7,\\\"total\\\":12},\\\"categoria\\\":\\\"...\\\",\\\"tipo\\\":\\\"despesa\\\",\\\"data\\\":null}]}. Se não identificar gastos, responda {\\\"gastos\\\":[]}.\";\nconst sleep = (ms) => new Promise((r) => setTimeout(r, ms));\nlet raw = '';\nfor (let a = 0; a < 3 && !raw; a++) {\n  if (a > 0) await sleep(4000);\n  try {\n    const resp = await this.helpers.httpRequest({\n      method: 'POST',\n      url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=' + GM,\n      headers: { 'Content-Type': 'application/json' },\n      body: { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimetype, data: b64 } }] }],\n              generationConfig: { temperature: 0.1, maxOutputTokens: 1200, thinkingConfig: { thinkingBudget: 0 } } },\n      json: true,\n      timeout: 120000\n    });\n    raw = (resp && resp.candidates && resp.candidates[0] && resp.candidates[0].content && resp.candidates[0].content.parts && resp.candidates[0].content.parts[0].text) || '';\n  } catch (e) {}\n}\nif (!raw && OR) {\n  try {\n    const resp = await this.helpers.httpRequest({\n      method: 'POST',\n      url: 'https://openrouter.ai/api/v1/chat/completions',\n      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + OR },\n      body: { model: 'google/gemma-4-26b-a4b-it:free',\n              messages: [{ role: 'user', content: [{ type: 'text', text: prompt }, { type: 'image_url', image_url: { url: 'data:' + mimetype + ';base64,' + b64 } }] }],\n              max_tokens: 600 },\n      json: true,\n      timeout: 120000\n    });\n    raw = (resp && resp.choices && resp.choices[0] && resp.choices[0].message && resp.choices[0].message.content) || '';\n    } catch (e) {}\n}\nif (!raw && b64) {\n  try {\n    const resp = await this.helpers.httpRequest({\n      method: 'POST',\n      url: 'http://financas-media:3000/parse-print',\n      headers: { 'Content-Type': 'application/json' },\n      body: { base64: b64, mimetype },\n      json: true,\n      timeout: 120000\n    });\n    if (resp && Array.isArray(resp.gastos) && resp.gastos.length) raw = JSON.stringify({ gastos: resp.gastos });\n  } catch (e) {}\n}\nreturn [{ json: { raw, temImagem: !!b64 } }];"
         },
-        "id": "bba34fe6-5c2e-412f-801b-6c7f2ed93221",
+        "id": "e64b25df-b6a2-4d3b-af4a-50ae500dd961",
         "name": "Analisar imagem",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -546,9 +546,9 @@
       },
       {
         "parameters": {
-          "jsCode": "const r = $input.first().json || {};\nlet raw = (r && r.raw) || '';\nlet gastos = [];\ntry {\n  const m = raw.match(/\\{[\\s\\S]*\\}/);\n  const parsed = JSON.parse(m ? m[0] : raw);\n  if (Array.isArray(parsed.gastos)) gastos = parsed.gastos;\n} catch (e) { gastos = []; }\nconst ctx = $('Contexto').first().json;\ngastos = (gastos || []).map((g) => {\nconst parcelas = (g && g.parcelas) || null;\nlet pAtual = (g && g.parcela_atual) ? Number(g.parcela_atual) : null;\nlet pTotal = (g && g.parcelas_total) ? Number(g.parcelas_total) : null;\nif (parcelas && typeof parcelas === 'object') {\n  pAtual = Number(parcelas.atual) || null;\n  pTotal = Number(parcelas.total) || null;\n}\n  const catRec = String((g && g.categoria) || 'Outros').slice(0, 60);\n  let valor = Math.round((Number(g && g.valor) || 0) * 100) / 100;\n  let valorTotal = (g && g.valor_total) ? Math.round(Number(g.valor_total) * 100) / 100 : null;\n  if (valorTotal === null && pTotal) valorTotal = Math.round(valor * pTotal * 100) / 100;\n  return {\n    descricao: String((g && g.descricao) || 'Gasto').slice(0, 120),\n    valor,\n    valor_total: valorTotal,\n    parcela_atual: pAtual,\n    parcelas_total: pTotal,\n    categoria: catRec,\n    tipo: (g && g.tipo === 'receita') ? 'receita' : 'despesa',\n    recorrente: (pTotal === null) && (['Assinaturas', 'Contas fixas'].includes(catRec)),\n    data: (g && typeof g.data === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(g.data)) ? g.data : null\n  };\n}).filter((g) => g.valor > 0);\nreturn [{ json: { numero: ctx.numero, gastos } }];"
+          "jsCode": "const r = $input.first().json || {};\nlet raw = (r && r.raw) || '';\nlet gastos = [];\ntry {\n  const m = raw.match(/\\{[\\s\\S]*\\}/);\n  const parsed = JSON.parse(m ? m[0] : raw);\n  if (Array.isArray(parsed.gastos)) gastos = parsed.gastos;\n} catch (e) { gastos = []; }\nconst ctx = $('Contexto').first().json;\ngastos = (gastos || []).map((g) => {\nconst parcelas = (g && g.parcelas) || null;\nlet pAtual = (g && g.parcela_atual) ? Number(g.parcela_atual) : null;\nlet pTotal = (g && g.parcelas_total) ? Number(g.parcelas_total) : null;\nif (parcelas && typeof parcelas === 'object') {\n  pAtual = Number(parcelas.atual) || null;\n  pTotal = Number(parcelas.total) || null;\n}\n  const catRec = String((g && g.categoria) || 'Outros').slice(0, 60);\n  let valor = Math.round((Number(g && g.valor) || 0) * 100) / 100;\n  let valorTotal = (g && g.valor_total) ? Math.round(Number(g.valor_total) * 100) / 100 : null;\n  if (valorTotal === null && pTotal) valorTotal = Math.round(valor * pTotal * 100) / 100;\n  return {\n    descricao: String((g && g.descricao) || 'Gasto').slice(0, 120),\n    valor,\n    valor_total: valorTotal,\n    parcela_atual: pAtual,\n    parcelas_total: pTotal,\n    categoria: catRec,\n    tipo: (g && g.tipo === 'receita') ? 'receita' : 'despesa',\n    recorrente: (pTotal === null) && (['Assinaturas', 'Contas fixas', 'Financiamento', 'Consórcio', 'Moradia'].includes(catRec)),\n    data: (g && typeof g.data === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(g.data)) ? g.data : null\n  };\n}).filter((g) => g.valor > 0);\nreturn [{ json: { numero: ctx.numero, gastos } }];"
         },
-        "id": "9ded1df3-9e33-454c-82ad-c21199c8c54d",
+        "id": "e00dbf08-baaa-4ff3-9559-f98dcd9fbc0a",
         "name": "Extrair gastos",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -565,7 +565,7 @@
             "queryReplacement": "={{ [ $json.numero, JSON.stringify($json.gastos) ] }}"
           }
         },
-        "id": "3b88595b-be03-4980-8f49-b7f662102165",
+        "id": "f88a75d7-4545-4833-a735-b5d5f68355a6",
         "name": "Gravar gastos (imagem)",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -584,7 +584,7 @@
         "parameters": {
           "jsCode": "const r = $input.first().json || {};\nconst ctx = $('Contexto').first().json || {};\nconst brl = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nlet inseridos = r.inseridos || [];\nif (typeof inseridos === 'string') { try { inseridos = JSON.parse(inseridos); } catch (e) { inseridos = []; } }\nconst nome = (ctx.pushName || '').split(' ')[0];\nlet text;\nif (!Array.isArray(inseridos) || !inseridos.length) {\n  text = `📷 ${nome ? nome + ', não' : 'Não'} consegui identificar gastos nessa imagem. Tenta mandar um print mais nítido (com o valor e a descrição legíveis). 😕`;\n} else {\n  const soma = inseridos.reduce((s, g) => s + Number(g.valor || 0), 0);\n  const itens = inseridos.map((g, i) => `${i + 1}. ${g.descricao} — *${brl(g.valor)}* (${g.categoria})`).join('\\n');\n  text = `📷 *Registrei pelo seu print!*\\n\\n${itens}\\n\\n💰 *Total desta imagem:* ${brl(soma)}`;\n}\nreturn [{ json: { text } }];"
         },
-        "id": "9344423b-f29b-4134-a5e8-5c100d1b336d",
+        "id": "74b2ba7a-54e4-4911-b8bb-1cb9d42e6ed4",
         "name": "Responder imagem",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -601,7 +601,7 @@
             "queryReplacement": "={{ [ $('Contexto').first().json.numero ] }}"
           }
         },
-        "id": "c04473f5-775e-4a69-9f64-7b1c15910cbd",
+        "id": "ef60a587-cc40-4017-97fc-7f675d8a53d3",
         "name": "Carregar dados",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -625,13 +625,13 @@
               {
                 "type": "SystemMessagePromptTemplate",
                 "messageType": "text",
-                "message": "=Você é o cérebro de um agente financeiro pessoal no WhatsApp (estilo Pierre Finance).\nAnalise a mensagem do usuário e devolva SOMENTE um JSON válido, sem nenhum texto antes ou depois.\n\nContexto financeiro atual:\n- Categorias disponíveis: {{ JSON.stringify($json.categorias) }}\n- Total gasto HOJE: R$ {{ $json.total_hoje }}\n- Total gasto nesta SEMANA: R$ {{ $json.total_semana }}\n- Total gasto neste MÊS: R$ {{ $json.total_mes }}\n- Limites mensais definidos: {{ JSON.stringify($json.limites) }}\n\nClassifique a intenção em UMA das opções:\n- \"registrar\": o usuário informa um gasto ou recebimento, inclusive parcelado. Ex.: \"gastei 30 no almoço\", \"comprei 600 em 12x de 50\", \"paguei a Netflix 7/12\", \"recebi 2000 de salário\".\n- \"resumo\": quer saber quanto gastou. Ex.: \"quanto gastei hoje?\", \"resumo da semana\", \"meus gastos do mês\".\n- \"relatorio\": quer um relatório para exportar. Ex.: \"me manda um relatório\", \"quero um excel\", \"gera um pdf dos meus gastos\".\n- \"dica\": quer sugestões de economia. Ex.: \"onde posso economizar?\", \"o que cortar?\", \"como gastar menos?\".\n- \"limite\": quer DEFINIR um limite de gasto ou VER os limites. Ex.: \"definir limite de mercado 500\", \"meu limite de lazer é 200\", \"quais são meus limites?\".\n- \"listar\": quer ver os gastos de uma categoria. Ex.: \"quais minhas assinaturas?\", \"meus gastos de alimentação\", \"mostra minhas compras\", \"ver transporte\".\n- \"editar\": quer corrigir/atualizar um gasto existente. Ex.: \"edita a Netflix para 49\", \"atualiza a academia para 90\", \"muda o gasto do mercado para 60\".\n- \"remover\": quer apagar um gasto existente. Ex.: \"remove a netflix\", \"apaga o uber\", \"deleta a assinatura do spotify\".\n- \"conversa\": qualquer outra coisa: saudações, ajuda, dúvidas, agradecimentos.\n\nRegras de extração:\n- valor: apenas o número (ex.: 30, 120.50). Para intenção \"limite\" que só consulta, use 0. Para \"editar\", o NOVO valor. NUNCA invente.\n- parcelas: se houver parcelamento (\"7/12\", \"12x\", \"12x de 150\", \"comprei 1800 em 12x\"), devolva {\"atual\":X,\"total\":N} (\"atual\" null se não informado). IMPORTANTE: \"valor\" deve ser SEMPRE o valor da PARCELA mensal. Se o usuário deu o total (\"comprei 1800 em 12x\"), calcule valor = total/parcelas = 150. Se deu a parcela (\"12x de 150\"), valor = 150. Em \"7/12 de 96\", valor = 96 (parcela). NUNCA use o total como valor quando houver parcelas.\n- alvo: para \"editar\"/\"remover\", a descrição aproximada do gasto (ex.: \"netflix\") OU o NÚMERO do item na última lista mostrada (ex.: \"editar o 3 para 50\" → alvo = \"3\"; \"remover o 2\" → alvo = \"2\"). Se o usuário citar a categoria (ex.: \"remova o item 1 de contas fixas\"), preencha também \"categoria\".\n- nova_descricao / nova_categoria / nova_data: opcionais para \"editar\" (o que mudar); senão null.\n- tipo: \"receita\" se for dinheiro recebido (salário, pix recebido, venda); caso contrário \"despesa\".\n- categoria: escolha a mais adequada da lista de categorias disponíveis. Mapeamentos importantes: consórcio/financiamento/financiamento de veículo/prestação de carro → \"Financiamento\"; corte de cabelo, barbearia, salão, presentes, gastos pessoais, \"gastos na rua\" → \"Pessoal\"; aluguel → \"Moradia\"; mês da academia → \"Saúde\". Se nenhuma servir, use \"Outros\". Para \"listar\", é a categoria a mostrar.\n- gastos: SE a mensagem informar VÁRIOS gastos de uma vez (ex.: \"550 de aluguel, 792 de consórcio e 400 de mercado\"), devolva TODOS como array em \"gastos\" (cada um com descricao/valor/categoria/tipo/data/parcelas/recorrente), e preencha também o PRIMEIRO nos campos principais. Senão deixe \"gastos\": null.\n- descricao: texto curto e claro (ex.: \"Almoço\", \"Uber\", \"Conta de luz\").\n- recorrente: true se for assinatura/conta fixa paga TODO MÊS (ex.: \"netflix mensal\", \"academia todo mês\", \"aluguel\", \"luz\", \"consórcio\"). Categorias \"Assinaturas\", \"Contas fixas\", \"Financiamento\" e \"Moradia\" normalmente são recorrentes. Senão false.\n- data: se o usuário citar um dia específico, use YYYY-MM-DD; senão use null.\n- periodo: \"hoje\", \"semana\" ou \"mes\" (padrão \"mes\").\n- formato: \"excel\" ou \"pdf\" (padrão \"excel\").\n\nFormato exato da resposta (JSON):\n{\"intent\":\"...\",\"descricao\":\"...\",\"valor\":0,\"tipo\":\"despesa\",\"categoria\":\"...\",\"data\":null,\"periodo\":\"mes\",\"formato\":\"excel\",\"parcelas\":null,\"recorrente\":false,\"gastos\":null,\"alvo\":null,\"novo_valor\":null,\"nova_descricao\":null,\"nova_categoria\":null,\"nova_data\":null}"
+                "message": "=Você é o cérebro de um agente financeiro pessoal no WhatsApp (estilo Pierre Finance).\nAnalise a mensagem do usuário e devolva SOMENTE um JSON válido, sem nenhum texto antes ou depois.\n\nContexto financeiro atual:\n- Categorias disponíveis: {{ JSON.stringify($json.categorias) }}\n- Total gasto HOJE: R$ {{ $json.total_hoje }}\n- Total gasto nesta SEMANA: R$ {{ $json.total_semana }}\n- Total gasto neste MÊS: R$ {{ $json.total_mes }}\n- Limites mensais definidos: {{ JSON.stringify($json.limites) }}\n\nClassifique a intenção em UMA das opções:\n- \"registrar\": o usuário informa um gasto ou recebimento, inclusive parcelado. Ex.: \"gastei 30 no almoço\", \"comprei 600 em 12x de 50\", \"paguei a Netflix 7/12\", \"recebi 2000 de salário\".\n- \"resumo\": quer saber quanto gastou. Ex.: \"quanto gastei hoje?\", \"resumo da semana\", \"meus gastos do mês\".\n- \"relatorio\": quer um relatório para exportar. Ex.: \"me manda um relatório\", \"quero um excel\", \"gera um pdf dos meus gastos\".\n- \"dica\": quer sugestões de economia. Ex.: \"onde posso economizar?\", \"o que cortar?\", \"como gastar menos?\".\n- \"limite\": quer DEFINIR um limite de gasto ou VER os limites. Ex.: \"definir limite de mercado 500\", \"meu limite de lazer é 200\", \"quais são meus limites?\".\n- \"listar\": quer ver os gastos de uma categoria. Ex.: \"quais minhas assinaturas?\", \"meus gastos de alimentação\", \"mostra minhas compras\", \"ver transporte\".\n- \"editar\": quer corrigir/atualizar um gasto existente. Ex.: \"edita a Netflix para 49\", \"atualiza a academia para 90\", \"muda o gasto do mercado para 60\".\n- \"remover\": quer apagar um gasto existente. Ex.: \"remove a netflix\", \"apaga o uber\", \"deleta a assinatura do spotify\".\n- \"conversa\": qualquer outra coisa: saudações, ajuda, dúvidas, agradecimentos.\n\nRegras de extração:\n- valor: apenas o número (ex.: 30, 120.50). Para intenção \"limite\" que só consulta, use 0. Para \"editar\", o NOVO valor. NUNCA invente.\n- parcelas: se houver parcelamento (\"7/12\", \"12x\", \"12x de 150\", \"comprei 1800 em 12x\"), devolva {\"atual\":X,\"total\":N} (\"atual\" null se não informado). IMPORTANTE: \"valor\" deve ser SEMPRE o valor da PARCELA mensal. Se o usuário deu o total (\"comprei 1800 em 12x\"), calcule valor = total/parcelas = 150. Se deu a parcela (\"12x de 150\"), valor = 150. Em \"7/12 de 96\", valor = 96 (parcela). NUNCA use o total como valor quando houver parcelas.\n- alvo: para \"editar\"/\"remover\", a descrição aproximada do gasto (ex.: \"netflix\") OU o NÚMERO do item na última lista mostrada (ex.: \"editar o 3 para 50\" → alvo = \"3\"; \"remover o 2\" → alvo = \"2\"). Se o usuário citar a categoria (ex.: \"remova o item 1 de contas fixas\"), preencha também \"categoria\".\n- nova_descricao / nova_categoria / nova_data: opcionais para \"editar\" (o que mudar); senão null.\n- tipo: \"receita\" se for dinheiro recebido (salário, pix recebido, venda); caso contrário \"despesa\".\n- categoria: escolha a mais adequada da lista de categorias disponíveis. Mapeamentos importantes: consórcio → \"Consórcio\"; financiamento/prestação de veículo → \"Financiamento\"; corte de cabelo, barbearia, salão, presentes, gastos pessoais, \"gastos na rua\" → \"Pessoal\"; aluguel → \"Moradia\"; mês da academia → \"Saúde\". Se nenhuma servir, use \"Outros\". Para \"listar\", é a categoria a mostrar.\n- meta: valor que o usuário quer JUNTAR/GUARDAR como objetivo (ex.: \"juntar 4000\", \"quero guardar 5 mil\" → meta=4000, \"como juntar 10 mil\" → meta=10000). Se não houver meta, use null.\n- gastos: SE a mensagem informar VÁRIOS gastos de uma vez (ex.: \"550 de aluguel, 792 de consórcio e 400 de mercado\"), devolva TODOS como array em \"gastos\" (cada um com descricao/valor/categoria/tipo/data/parcelas/recorrente), e preencha também o PRIMEIRO nos campos principais. Senão deixe \"gastos\": null.\n- descricao: texto curto e claro (ex.: \"Almoço\", \"Uber\", \"Conta de luz\").\n- recorrente: true se for assinatura/conta fixa paga TODO MÊS (ex.: \"netflix mensal\", \"academia todo mês\", \"aluguel\", \"luz\", \"consórcio\"). Categorias \"Assinaturas\", \"Contas fixas\", \"Financiamento\", \"Consórcio\" e \"Moradia\" normalmente são recorrentes. Senão false.\n- data: se o usuário citar um dia específico, use YYYY-MM-DD; senão use null.\n- periodo: \"hoje\", \"semana\" ou \"mes\" (padrão \"mes\").\n- formato: \"excel\" ou \"pdf\" (padrão \"excel\").\n\nFormato exato da resposta (JSON):\n{\"intent\":\"...\",\"descricao\":\"...\",\"valor\":0,\"tipo\":\"despesa\",\"categoria\":\"...\",\"data\":null,\"periodo\":\"mes\",\"formato\":\"excel\",\"parcelas\":null,\"recorrente\":false,\"gastos\":null,\"meta\":null,\"alvo\":null,\"novo_valor\":null,\"nova_descricao\":null,\"nova_categoria\":null,\"nova_data\":null}"
               }
             ]
           },
           "options": {}
         },
-        "id": "294828b1-35ef-4ec7-a9c7-19b813f834b8",
+        "id": "3028205c-cc84-4caf-ba4e-e44f5917ffa8",
         "name": "Classificar (1-Groq)",
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.7,
@@ -650,13 +650,13 @@
               {
                 "type": "SystemMessagePromptTemplate",
                 "messageType": "text",
-                "message": "=Você é o cérebro de um agente financeiro pessoal no WhatsApp (estilo Pierre Finance).\nAnalise a mensagem do usuário e devolva SOMENTE um JSON válido, sem nenhum texto antes ou depois.\n\nContexto financeiro atual:\n- Categorias disponíveis: {{ JSON.stringify($json.categorias) }}\n- Total gasto HOJE: R$ {{ $json.total_hoje }}\n- Total gasto nesta SEMANA: R$ {{ $json.total_semana }}\n- Total gasto neste MÊS: R$ {{ $json.total_mes }}\n- Limites mensais definidos: {{ JSON.stringify($json.limites) }}\n\nClassifique a intenção em UMA das opções:\n- \"registrar\": o usuário informa um gasto ou recebimento, inclusive parcelado. Ex.: \"gastei 30 no almoço\", \"comprei 600 em 12x de 50\", \"paguei a Netflix 7/12\", \"recebi 2000 de salário\".\n- \"resumo\": quer saber quanto gastou. Ex.: \"quanto gastei hoje?\", \"resumo da semana\", \"meus gastos do mês\".\n- \"relatorio\": quer um relatório para exportar. Ex.: \"me manda um relatório\", \"quero um excel\", \"gera um pdf dos meus gastos\".\n- \"dica\": quer sugestões de economia. Ex.: \"onde posso economizar?\", \"o que cortar?\", \"como gastar menos?\".\n- \"limite\": quer DEFINIR um limite de gasto ou VER os limites. Ex.: \"definir limite de mercado 500\", \"meu limite de lazer é 200\", \"quais são meus limites?\".\n- \"listar\": quer ver os gastos de uma categoria. Ex.: \"quais minhas assinaturas?\", \"meus gastos de alimentação\", \"mostra minhas compras\", \"ver transporte\".\n- \"editar\": quer corrigir/atualizar um gasto existente. Ex.: \"edita a Netflix para 49\", \"atualiza a academia para 90\", \"muda o gasto do mercado para 60\".\n- \"remover\": quer apagar um gasto existente. Ex.: \"remove a netflix\", \"apaga o uber\", \"deleta a assinatura do spotify\".\n- \"conversa\": qualquer outra coisa: saudações, ajuda, dúvidas, agradecimentos.\n\nRegras de extração:\n- valor: apenas o número (ex.: 30, 120.50). Para intenção \"limite\" que só consulta, use 0. Para \"editar\", o NOVO valor. NUNCA invente.\n- parcelas: se houver parcelamento (\"7/12\", \"12x\", \"12x de 150\", \"comprei 1800 em 12x\"), devolva {\"atual\":X,\"total\":N} (\"atual\" null se não informado). IMPORTANTE: \"valor\" deve ser SEMPRE o valor da PARCELA mensal. Se o usuário deu o total (\"comprei 1800 em 12x\"), calcule valor = total/parcelas = 150. Se deu a parcela (\"12x de 150\"), valor = 150. Em \"7/12 de 96\", valor = 96 (parcela). NUNCA use o total como valor quando houver parcelas.\n- alvo: para \"editar\"/\"remover\", a descrição aproximada do gasto (ex.: \"netflix\") OU o NÚMERO do item na última lista mostrada (ex.: \"editar o 3 para 50\" → alvo = \"3\"; \"remover o 2\" → alvo = \"2\"). Se o usuário citar a categoria (ex.: \"remova o item 1 de contas fixas\"), preencha também \"categoria\".\n- nova_descricao / nova_categoria / nova_data: opcionais para \"editar\" (o que mudar); senão null.\n- tipo: \"receita\" se for dinheiro recebido (salário, pix recebido, venda); caso contrário \"despesa\".\n- categoria: escolha a mais adequada da lista de categorias disponíveis. Mapeamentos importantes: consórcio/financiamento/financiamento de veículo/prestação de carro → \"Financiamento\"; corte de cabelo, barbearia, salão, presentes, gastos pessoais, \"gastos na rua\" → \"Pessoal\"; aluguel → \"Moradia\"; mês da academia → \"Saúde\". Se nenhuma servir, use \"Outros\". Para \"listar\", é a categoria a mostrar.\n- gastos: SE a mensagem informar VÁRIOS gastos de uma vez (ex.: \"550 de aluguel, 792 de consórcio e 400 de mercado\"), devolva TODOS como array em \"gastos\" (cada um com descricao/valor/categoria/tipo/data/parcelas/recorrente), e preencha também o PRIMEIRO nos campos principais. Senão deixe \"gastos\": null.\n- descricao: texto curto e claro (ex.: \"Almoço\", \"Uber\", \"Conta de luz\").\n- recorrente: true se for assinatura/conta fixa paga TODO MÊS (ex.: \"netflix mensal\", \"academia todo mês\", \"aluguel\", \"luz\", \"consórcio\"). Categorias \"Assinaturas\", \"Contas fixas\", \"Financiamento\" e \"Moradia\" normalmente são recorrentes. Senão false.\n- data: se o usuário citar um dia específico, use YYYY-MM-DD; senão use null.\n- periodo: \"hoje\", \"semana\" ou \"mes\" (padrão \"mes\").\n- formato: \"excel\" ou \"pdf\" (padrão \"excel\").\n\nFormato exato da resposta (JSON):\n{\"intent\":\"...\",\"descricao\":\"...\",\"valor\":0,\"tipo\":\"despesa\",\"categoria\":\"...\",\"data\":null,\"periodo\":\"mes\",\"formato\":\"excel\",\"parcelas\":null,\"recorrente\":false,\"gastos\":null,\"alvo\":null,\"novo_valor\":null,\"nova_descricao\":null,\"nova_categoria\":null,\"nova_data\":null}"
+                "message": "=Você é o cérebro de um agente financeiro pessoal no WhatsApp (estilo Pierre Finance).\nAnalise a mensagem do usuário e devolva SOMENTE um JSON válido, sem nenhum texto antes ou depois.\n\nContexto financeiro atual:\n- Categorias disponíveis: {{ JSON.stringify($json.categorias) }}\n- Total gasto HOJE: R$ {{ $json.total_hoje }}\n- Total gasto nesta SEMANA: R$ {{ $json.total_semana }}\n- Total gasto neste MÊS: R$ {{ $json.total_mes }}\n- Limites mensais definidos: {{ JSON.stringify($json.limites) }}\n\nClassifique a intenção em UMA das opções:\n- \"registrar\": o usuário informa um gasto ou recebimento, inclusive parcelado. Ex.: \"gastei 30 no almoço\", \"comprei 600 em 12x de 50\", \"paguei a Netflix 7/12\", \"recebi 2000 de salário\".\n- \"resumo\": quer saber quanto gastou. Ex.: \"quanto gastei hoje?\", \"resumo da semana\", \"meus gastos do mês\".\n- \"relatorio\": quer um relatório para exportar. Ex.: \"me manda um relatório\", \"quero um excel\", \"gera um pdf dos meus gastos\".\n- \"dica\": quer sugestões de economia. Ex.: \"onde posso economizar?\", \"o que cortar?\", \"como gastar menos?\".\n- \"limite\": quer DEFINIR um limite de gasto ou VER os limites. Ex.: \"definir limite de mercado 500\", \"meu limite de lazer é 200\", \"quais são meus limites?\".\n- \"listar\": quer ver os gastos de uma categoria. Ex.: \"quais minhas assinaturas?\", \"meus gastos de alimentação\", \"mostra minhas compras\", \"ver transporte\".\n- \"editar\": quer corrigir/atualizar um gasto existente. Ex.: \"edita a Netflix para 49\", \"atualiza a academia para 90\", \"muda o gasto do mercado para 60\".\n- \"remover\": quer apagar um gasto existente. Ex.: \"remove a netflix\", \"apaga o uber\", \"deleta a assinatura do spotify\".\n- \"conversa\": qualquer outra coisa: saudações, ajuda, dúvidas, agradecimentos.\n\nRegras de extração:\n- valor: apenas o número (ex.: 30, 120.50). Para intenção \"limite\" que só consulta, use 0. Para \"editar\", o NOVO valor. NUNCA invente.\n- parcelas: se houver parcelamento (\"7/12\", \"12x\", \"12x de 150\", \"comprei 1800 em 12x\"), devolva {\"atual\":X,\"total\":N} (\"atual\" null se não informado). IMPORTANTE: \"valor\" deve ser SEMPRE o valor da PARCELA mensal. Se o usuário deu o total (\"comprei 1800 em 12x\"), calcule valor = total/parcelas = 150. Se deu a parcela (\"12x de 150\"), valor = 150. Em \"7/12 de 96\", valor = 96 (parcela). NUNCA use o total como valor quando houver parcelas.\n- alvo: para \"editar\"/\"remover\", a descrição aproximada do gasto (ex.: \"netflix\") OU o NÚMERO do item na última lista mostrada (ex.: \"editar o 3 para 50\" → alvo = \"3\"; \"remover o 2\" → alvo = \"2\"). Se o usuário citar a categoria (ex.: \"remova o item 1 de contas fixas\"), preencha também \"categoria\".\n- nova_descricao / nova_categoria / nova_data: opcionais para \"editar\" (o que mudar); senão null.\n- tipo: \"receita\" se for dinheiro recebido (salário, pix recebido, venda); caso contrário \"despesa\".\n- categoria: escolha a mais adequada da lista de categorias disponíveis. Mapeamentos importantes: consórcio → \"Consórcio\"; financiamento/prestação de veículo → \"Financiamento\"; corte de cabelo, barbearia, salão, presentes, gastos pessoais, \"gastos na rua\" → \"Pessoal\"; aluguel → \"Moradia\"; mês da academia → \"Saúde\". Se nenhuma servir, use \"Outros\". Para \"listar\", é a categoria a mostrar.\n- meta: valor que o usuário quer JUNTAR/GUARDAR como objetivo (ex.: \"juntar 4000\", \"quero guardar 5 mil\" → meta=4000, \"como juntar 10 mil\" → meta=10000). Se não houver meta, use null.\n- gastos: SE a mensagem informar VÁRIOS gastos de uma vez (ex.: \"550 de aluguel, 792 de consórcio e 400 de mercado\"), devolva TODOS como array em \"gastos\" (cada um com descricao/valor/categoria/tipo/data/parcelas/recorrente), e preencha também o PRIMEIRO nos campos principais. Senão deixe \"gastos\": null.\n- descricao: texto curto e claro (ex.: \"Almoço\", \"Uber\", \"Conta de luz\").\n- recorrente: true se for assinatura/conta fixa paga TODO MÊS (ex.: \"netflix mensal\", \"academia todo mês\", \"aluguel\", \"luz\", \"consórcio\"). Categorias \"Assinaturas\", \"Contas fixas\", \"Financiamento\", \"Consórcio\" e \"Moradia\" normalmente são recorrentes. Senão false.\n- data: se o usuário citar um dia específico, use YYYY-MM-DD; senão use null.\n- periodo: \"hoje\", \"semana\" ou \"mes\" (padrão \"mes\").\n- formato: \"excel\" ou \"pdf\" (padrão \"excel\").\n\nFormato exato da resposta (JSON):\n{\"intent\":\"...\",\"descricao\":\"...\",\"valor\":0,\"tipo\":\"despesa\",\"categoria\":\"...\",\"data\":null,\"periodo\":\"mes\",\"formato\":\"excel\",\"parcelas\":null,\"recorrente\":false,\"gastos\":null,\"meta\":null,\"alvo\":null,\"novo_valor\":null,\"nova_descricao\":null,\"nova_categoria\":null,\"nova_data\":null}"
               }
             ]
           },
           "options": {}
         },
-        "id": "4d26e417-d1c7-46e8-9f8c-767569d8d8bb",
+        "id": "922a219d-47e5-45cf-99f8-083d79c65e12",
         "name": "Classificar (2-Gemini)",
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.7,
@@ -675,13 +675,13 @@
               {
                 "type": "SystemMessagePromptTemplate",
                 "messageType": "text",
-                "message": "=Você é o cérebro de um agente financeiro pessoal no WhatsApp (estilo Pierre Finance).\nAnalise a mensagem do usuário e devolva SOMENTE um JSON válido, sem nenhum texto antes ou depois.\n\nContexto financeiro atual:\n- Categorias disponíveis: {{ JSON.stringify($json.categorias) }}\n- Total gasto HOJE: R$ {{ $json.total_hoje }}\n- Total gasto nesta SEMANA: R$ {{ $json.total_semana }}\n- Total gasto neste MÊS: R$ {{ $json.total_mes }}\n- Limites mensais definidos: {{ JSON.stringify($json.limites) }}\n\nClassifique a intenção em UMA das opções:\n- \"registrar\": o usuário informa um gasto ou recebimento, inclusive parcelado. Ex.: \"gastei 30 no almoço\", \"comprei 600 em 12x de 50\", \"paguei a Netflix 7/12\", \"recebi 2000 de salário\".\n- \"resumo\": quer saber quanto gastou. Ex.: \"quanto gastei hoje?\", \"resumo da semana\", \"meus gastos do mês\".\n- \"relatorio\": quer um relatório para exportar. Ex.: \"me manda um relatório\", \"quero um excel\", \"gera um pdf dos meus gastos\".\n- \"dica\": quer sugestões de economia. Ex.: \"onde posso economizar?\", \"o que cortar?\", \"como gastar menos?\".\n- \"limite\": quer DEFINIR um limite de gasto ou VER os limites. Ex.: \"definir limite de mercado 500\", \"meu limite de lazer é 200\", \"quais são meus limites?\".\n- \"listar\": quer ver os gastos de uma categoria. Ex.: \"quais minhas assinaturas?\", \"meus gastos de alimentação\", \"mostra minhas compras\", \"ver transporte\".\n- \"editar\": quer corrigir/atualizar um gasto existente. Ex.: \"edita a Netflix para 49\", \"atualiza a academia para 90\", \"muda o gasto do mercado para 60\".\n- \"remover\": quer apagar um gasto existente. Ex.: \"remove a netflix\", \"apaga o uber\", \"deleta a assinatura do spotify\".\n- \"conversa\": qualquer outra coisa: saudações, ajuda, dúvidas, agradecimentos.\n\nRegras de extração:\n- valor: apenas o número (ex.: 30, 120.50). Para intenção \"limite\" que só consulta, use 0. Para \"editar\", o NOVO valor. NUNCA invente.\n- parcelas: se houver parcelamento (\"7/12\", \"12x\", \"12x de 150\", \"comprei 1800 em 12x\"), devolva {\"atual\":X,\"total\":N} (\"atual\" null se não informado). IMPORTANTE: \"valor\" deve ser SEMPRE o valor da PARCELA mensal. Se o usuário deu o total (\"comprei 1800 em 12x\"), calcule valor = total/parcelas = 150. Se deu a parcela (\"12x de 150\"), valor = 150. Em \"7/12 de 96\", valor = 96 (parcela). NUNCA use o total como valor quando houver parcelas.\n- alvo: para \"editar\"/\"remover\", a descrição aproximada do gasto (ex.: \"netflix\") OU o NÚMERO do item na última lista mostrada (ex.: \"editar o 3 para 50\" → alvo = \"3\"; \"remover o 2\" → alvo = \"2\"). Se o usuário citar a categoria (ex.: \"remova o item 1 de contas fixas\"), preencha também \"categoria\".\n- nova_descricao / nova_categoria / nova_data: opcionais para \"editar\" (o que mudar); senão null.\n- tipo: \"receita\" se for dinheiro recebido (salário, pix recebido, venda); caso contrário \"despesa\".\n- categoria: escolha a mais adequada da lista de categorias disponíveis. Mapeamentos importantes: consórcio/financiamento/financiamento de veículo/prestação de carro → \"Financiamento\"; corte de cabelo, barbearia, salão, presentes, gastos pessoais, \"gastos na rua\" → \"Pessoal\"; aluguel → \"Moradia\"; mês da academia → \"Saúde\". Se nenhuma servir, use \"Outros\". Para \"listar\", é a categoria a mostrar.\n- gastos: SE a mensagem informar VÁRIOS gastos de uma vez (ex.: \"550 de aluguel, 792 de consórcio e 400 de mercado\"), devolva TODOS como array em \"gastos\" (cada um com descricao/valor/categoria/tipo/data/parcelas/recorrente), e preencha também o PRIMEIRO nos campos principais. Senão deixe \"gastos\": null.\n- descricao: texto curto e claro (ex.: \"Almoço\", \"Uber\", \"Conta de luz\").\n- recorrente: true se for assinatura/conta fixa paga TODO MÊS (ex.: \"netflix mensal\", \"academia todo mês\", \"aluguel\", \"luz\", \"consórcio\"). Categorias \"Assinaturas\", \"Contas fixas\", \"Financiamento\" e \"Moradia\" normalmente são recorrentes. Senão false.\n- data: se o usuário citar um dia específico, use YYYY-MM-DD; senão use null.\n- periodo: \"hoje\", \"semana\" ou \"mes\" (padrão \"mes\").\n- formato: \"excel\" ou \"pdf\" (padrão \"excel\").\n\nFormato exato da resposta (JSON):\n{\"intent\":\"...\",\"descricao\":\"...\",\"valor\":0,\"tipo\":\"despesa\",\"categoria\":\"...\",\"data\":null,\"periodo\":\"mes\",\"formato\":\"excel\",\"parcelas\":null,\"recorrente\":false,\"gastos\":null,\"alvo\":null,\"novo_valor\":null,\"nova_descricao\":null,\"nova_categoria\":null,\"nova_data\":null}"
+                "message": "=Você é o cérebro de um agente financeiro pessoal no WhatsApp (estilo Pierre Finance).\nAnalise a mensagem do usuário e devolva SOMENTE um JSON válido, sem nenhum texto antes ou depois.\n\nContexto financeiro atual:\n- Categorias disponíveis: {{ JSON.stringify($json.categorias) }}\n- Total gasto HOJE: R$ {{ $json.total_hoje }}\n- Total gasto nesta SEMANA: R$ {{ $json.total_semana }}\n- Total gasto neste MÊS: R$ {{ $json.total_mes }}\n- Limites mensais definidos: {{ JSON.stringify($json.limites) }}\n\nClassifique a intenção em UMA das opções:\n- \"registrar\": o usuário informa um gasto ou recebimento, inclusive parcelado. Ex.: \"gastei 30 no almoço\", \"comprei 600 em 12x de 50\", \"paguei a Netflix 7/12\", \"recebi 2000 de salário\".\n- \"resumo\": quer saber quanto gastou. Ex.: \"quanto gastei hoje?\", \"resumo da semana\", \"meus gastos do mês\".\n- \"relatorio\": quer um relatório para exportar. Ex.: \"me manda um relatório\", \"quero um excel\", \"gera um pdf dos meus gastos\".\n- \"dica\": quer sugestões de economia. Ex.: \"onde posso economizar?\", \"o que cortar?\", \"como gastar menos?\".\n- \"limite\": quer DEFINIR um limite de gasto ou VER os limites. Ex.: \"definir limite de mercado 500\", \"meu limite de lazer é 200\", \"quais são meus limites?\".\n- \"listar\": quer ver os gastos de uma categoria. Ex.: \"quais minhas assinaturas?\", \"meus gastos de alimentação\", \"mostra minhas compras\", \"ver transporte\".\n- \"editar\": quer corrigir/atualizar um gasto existente. Ex.: \"edita a Netflix para 49\", \"atualiza a academia para 90\", \"muda o gasto do mercado para 60\".\n- \"remover\": quer apagar um gasto existente. Ex.: \"remove a netflix\", \"apaga o uber\", \"deleta a assinatura do spotify\".\n- \"conversa\": qualquer outra coisa: saudações, ajuda, dúvidas, agradecimentos.\n\nRegras de extração:\n- valor: apenas o número (ex.: 30, 120.50). Para intenção \"limite\" que só consulta, use 0. Para \"editar\", o NOVO valor. NUNCA invente.\n- parcelas: se houver parcelamento (\"7/12\", \"12x\", \"12x de 150\", \"comprei 1800 em 12x\"), devolva {\"atual\":X,\"total\":N} (\"atual\" null se não informado). IMPORTANTE: \"valor\" deve ser SEMPRE o valor da PARCELA mensal. Se o usuário deu o total (\"comprei 1800 em 12x\"), calcule valor = total/parcelas = 150. Se deu a parcela (\"12x de 150\"), valor = 150. Em \"7/12 de 96\", valor = 96 (parcela). NUNCA use o total como valor quando houver parcelas.\n- alvo: para \"editar\"/\"remover\", a descrição aproximada do gasto (ex.: \"netflix\") OU o NÚMERO do item na última lista mostrada (ex.: \"editar o 3 para 50\" → alvo = \"3\"; \"remover o 2\" → alvo = \"2\"). Se o usuário citar a categoria (ex.: \"remova o item 1 de contas fixas\"), preencha também \"categoria\".\n- nova_descricao / nova_categoria / nova_data: opcionais para \"editar\" (o que mudar); senão null.\n- tipo: \"receita\" se for dinheiro recebido (salário, pix recebido, venda); caso contrário \"despesa\".\n- categoria: escolha a mais adequada da lista de categorias disponíveis. Mapeamentos importantes: consórcio → \"Consórcio\"; financiamento/prestação de veículo → \"Financiamento\"; corte de cabelo, barbearia, salão, presentes, gastos pessoais, \"gastos na rua\" → \"Pessoal\"; aluguel → \"Moradia\"; mês da academia → \"Saúde\". Se nenhuma servir, use \"Outros\". Para \"listar\", é a categoria a mostrar.\n- meta: valor que o usuário quer JUNTAR/GUARDAR como objetivo (ex.: \"juntar 4000\", \"quero guardar 5 mil\" → meta=4000, \"como juntar 10 mil\" → meta=10000). Se não houver meta, use null.\n- gastos: SE a mensagem informar VÁRIOS gastos de uma vez (ex.: \"550 de aluguel, 792 de consórcio e 400 de mercado\"), devolva TODOS como array em \"gastos\" (cada um com descricao/valor/categoria/tipo/data/parcelas/recorrente), e preencha também o PRIMEIRO nos campos principais. Senão deixe \"gastos\": null.\n- descricao: texto curto e claro (ex.: \"Almoço\", \"Uber\", \"Conta de luz\").\n- recorrente: true se for assinatura/conta fixa paga TODO MÊS (ex.: \"netflix mensal\", \"academia todo mês\", \"aluguel\", \"luz\", \"consórcio\"). Categorias \"Assinaturas\", \"Contas fixas\", \"Financiamento\", \"Consórcio\" e \"Moradia\" normalmente são recorrentes. Senão false.\n- data: se o usuário citar um dia específico, use YYYY-MM-DD; senão use null.\n- periodo: \"hoje\", \"semana\" ou \"mes\" (padrão \"mes\").\n- formato: \"excel\" ou \"pdf\" (padrão \"excel\").\n\nFormato exato da resposta (JSON):\n{\"intent\":\"...\",\"descricao\":\"...\",\"valor\":0,\"tipo\":\"despesa\",\"categoria\":\"...\",\"data\":null,\"periodo\":\"mes\",\"formato\":\"excel\",\"parcelas\":null,\"recorrente\":false,\"gastos\":null,\"meta\":null,\"alvo\":null,\"novo_valor\":null,\"nova_descricao\":null,\"nova_categoria\":null,\"nova_data\":null}"
               }
             ]
           },
           "options": {}
         },
-        "id": "8c714ed8-ecf7-4c2a-9938-939ddd28617e",
+        "id": "11d17cdc-a6ae-416d-ae61-cb0cacdb4b1c",
         "name": "Classificar (3-OpenRouter)",
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.7,
@@ -700,13 +700,13 @@
               {
                 "type": "SystemMessagePromptTemplate",
                 "messageType": "text",
-                "message": "=Você é o cérebro de um agente financeiro pessoal no WhatsApp (estilo Pierre Finance).\nAnalise a mensagem do usuário e devolva SOMENTE um JSON válido, sem nenhum texto antes ou depois.\n\nContexto financeiro atual:\n- Categorias disponíveis: {{ JSON.stringify($json.categorias) }}\n- Total gasto HOJE: R$ {{ $json.total_hoje }}\n- Total gasto nesta SEMANA: R$ {{ $json.total_semana }}\n- Total gasto neste MÊS: R$ {{ $json.total_mes }}\n- Limites mensais definidos: {{ JSON.stringify($json.limites) }}\n\nClassifique a intenção em UMA das opções:\n- \"registrar\": o usuário informa um gasto ou recebimento, inclusive parcelado. Ex.: \"gastei 30 no almoço\", \"comprei 600 em 12x de 50\", \"paguei a Netflix 7/12\", \"recebi 2000 de salário\".\n- \"resumo\": quer saber quanto gastou. Ex.: \"quanto gastei hoje?\", \"resumo da semana\", \"meus gastos do mês\".\n- \"relatorio\": quer um relatório para exportar. Ex.: \"me manda um relatório\", \"quero um excel\", \"gera um pdf dos meus gastos\".\n- \"dica\": quer sugestões de economia. Ex.: \"onde posso economizar?\", \"o que cortar?\", \"como gastar menos?\".\n- \"limite\": quer DEFINIR um limite de gasto ou VER os limites. Ex.: \"definir limite de mercado 500\", \"meu limite de lazer é 200\", \"quais são meus limites?\".\n- \"listar\": quer ver os gastos de uma categoria. Ex.: \"quais minhas assinaturas?\", \"meus gastos de alimentação\", \"mostra minhas compras\", \"ver transporte\".\n- \"editar\": quer corrigir/atualizar um gasto existente. Ex.: \"edita a Netflix para 49\", \"atualiza a academia para 90\", \"muda o gasto do mercado para 60\".\n- \"remover\": quer apagar um gasto existente. Ex.: \"remove a netflix\", \"apaga o uber\", \"deleta a assinatura do spotify\".\n- \"conversa\": qualquer outra coisa: saudações, ajuda, dúvidas, agradecimentos.\n\nRegras de extração:\n- valor: apenas o número (ex.: 30, 120.50). Para intenção \"limite\" que só consulta, use 0. Para \"editar\", o NOVO valor. NUNCA invente.\n- parcelas: se houver parcelamento (\"7/12\", \"12x\", \"12x de 150\", \"comprei 1800 em 12x\"), devolva {\"atual\":X,\"total\":N} (\"atual\" null se não informado). IMPORTANTE: \"valor\" deve ser SEMPRE o valor da PARCELA mensal. Se o usuário deu o total (\"comprei 1800 em 12x\"), calcule valor = total/parcelas = 150. Se deu a parcela (\"12x de 150\"), valor = 150. Em \"7/12 de 96\", valor = 96 (parcela). NUNCA use o total como valor quando houver parcelas.\n- alvo: para \"editar\"/\"remover\", a descrição aproximada do gasto (ex.: \"netflix\") OU o NÚMERO do item na última lista mostrada (ex.: \"editar o 3 para 50\" → alvo = \"3\"; \"remover o 2\" → alvo = \"2\"). Se o usuário citar a categoria (ex.: \"remova o item 1 de contas fixas\"), preencha também \"categoria\".\n- nova_descricao / nova_categoria / nova_data: opcionais para \"editar\" (o que mudar); senão null.\n- tipo: \"receita\" se for dinheiro recebido (salário, pix recebido, venda); caso contrário \"despesa\".\n- categoria: escolha a mais adequada da lista de categorias disponíveis. Mapeamentos importantes: consórcio/financiamento/financiamento de veículo/prestação de carro → \"Financiamento\"; corte de cabelo, barbearia, salão, presentes, gastos pessoais, \"gastos na rua\" → \"Pessoal\"; aluguel → \"Moradia\"; mês da academia → \"Saúde\". Se nenhuma servir, use \"Outros\". Para \"listar\", é a categoria a mostrar.\n- gastos: SE a mensagem informar VÁRIOS gastos de uma vez (ex.: \"550 de aluguel, 792 de consórcio e 400 de mercado\"), devolva TODOS como array em \"gastos\" (cada um com descricao/valor/categoria/tipo/data/parcelas/recorrente), e preencha também o PRIMEIRO nos campos principais. Senão deixe \"gastos\": null.\n- descricao: texto curto e claro (ex.: \"Almoço\", \"Uber\", \"Conta de luz\").\n- recorrente: true se for assinatura/conta fixa paga TODO MÊS (ex.: \"netflix mensal\", \"academia todo mês\", \"aluguel\", \"luz\", \"consórcio\"). Categorias \"Assinaturas\", \"Contas fixas\", \"Financiamento\" e \"Moradia\" normalmente são recorrentes. Senão false.\n- data: se o usuário citar um dia específico, use YYYY-MM-DD; senão use null.\n- periodo: \"hoje\", \"semana\" ou \"mes\" (padrão \"mes\").\n- formato: \"excel\" ou \"pdf\" (padrão \"excel\").\n\nFormato exato da resposta (JSON):\n{\"intent\":\"...\",\"descricao\":\"...\",\"valor\":0,\"tipo\":\"despesa\",\"categoria\":\"...\",\"data\":null,\"periodo\":\"mes\",\"formato\":\"excel\",\"parcelas\":null,\"recorrente\":false,\"gastos\":null,\"alvo\":null,\"novo_valor\":null,\"nova_descricao\":null,\"nova_categoria\":null,\"nova_data\":null}"
+                "message": "=Você é o cérebro de um agente financeiro pessoal no WhatsApp (estilo Pierre Finance).\nAnalise a mensagem do usuário e devolva SOMENTE um JSON válido, sem nenhum texto antes ou depois.\n\nContexto financeiro atual:\n- Categorias disponíveis: {{ JSON.stringify($json.categorias) }}\n- Total gasto HOJE: R$ {{ $json.total_hoje }}\n- Total gasto nesta SEMANA: R$ {{ $json.total_semana }}\n- Total gasto neste MÊS: R$ {{ $json.total_mes }}\n- Limites mensais definidos: {{ JSON.stringify($json.limites) }}\n\nClassifique a intenção em UMA das opções:\n- \"registrar\": o usuário informa um gasto ou recebimento, inclusive parcelado. Ex.: \"gastei 30 no almoço\", \"comprei 600 em 12x de 50\", \"paguei a Netflix 7/12\", \"recebi 2000 de salário\".\n- \"resumo\": quer saber quanto gastou. Ex.: \"quanto gastei hoje?\", \"resumo da semana\", \"meus gastos do mês\".\n- \"relatorio\": quer um relatório para exportar. Ex.: \"me manda um relatório\", \"quero um excel\", \"gera um pdf dos meus gastos\".\n- \"dica\": quer sugestões de economia. Ex.: \"onde posso economizar?\", \"o que cortar?\", \"como gastar menos?\".\n- \"limite\": quer DEFINIR um limite de gasto ou VER os limites. Ex.: \"definir limite de mercado 500\", \"meu limite de lazer é 200\", \"quais são meus limites?\".\n- \"listar\": quer ver os gastos de uma categoria. Ex.: \"quais minhas assinaturas?\", \"meus gastos de alimentação\", \"mostra minhas compras\", \"ver transporte\".\n- \"editar\": quer corrigir/atualizar um gasto existente. Ex.: \"edita a Netflix para 49\", \"atualiza a academia para 90\", \"muda o gasto do mercado para 60\".\n- \"remover\": quer apagar um gasto existente. Ex.: \"remove a netflix\", \"apaga o uber\", \"deleta a assinatura do spotify\".\n- \"conversa\": qualquer outra coisa: saudações, ajuda, dúvidas, agradecimentos.\n\nRegras de extração:\n- valor: apenas o número (ex.: 30, 120.50). Para intenção \"limite\" que só consulta, use 0. Para \"editar\", o NOVO valor. NUNCA invente.\n- parcelas: se houver parcelamento (\"7/12\", \"12x\", \"12x de 150\", \"comprei 1800 em 12x\"), devolva {\"atual\":X,\"total\":N} (\"atual\" null se não informado). IMPORTANTE: \"valor\" deve ser SEMPRE o valor da PARCELA mensal. Se o usuário deu o total (\"comprei 1800 em 12x\"), calcule valor = total/parcelas = 150. Se deu a parcela (\"12x de 150\"), valor = 150. Em \"7/12 de 96\", valor = 96 (parcela). NUNCA use o total como valor quando houver parcelas.\n- alvo: para \"editar\"/\"remover\", a descrição aproximada do gasto (ex.: \"netflix\") OU o NÚMERO do item na última lista mostrada (ex.: \"editar o 3 para 50\" → alvo = \"3\"; \"remover o 2\" → alvo = \"2\"). Se o usuário citar a categoria (ex.: \"remova o item 1 de contas fixas\"), preencha também \"categoria\".\n- nova_descricao / nova_categoria / nova_data: opcionais para \"editar\" (o que mudar); senão null.\n- tipo: \"receita\" se for dinheiro recebido (salário, pix recebido, venda); caso contrário \"despesa\".\n- categoria: escolha a mais adequada da lista de categorias disponíveis. Mapeamentos importantes: consórcio → \"Consórcio\"; financiamento/prestação de veículo → \"Financiamento\"; corte de cabelo, barbearia, salão, presentes, gastos pessoais, \"gastos na rua\" → \"Pessoal\"; aluguel → \"Moradia\"; mês da academia → \"Saúde\". Se nenhuma servir, use \"Outros\". Para \"listar\", é a categoria a mostrar.\n- meta: valor que o usuário quer JUNTAR/GUARDAR como objetivo (ex.: \"juntar 4000\", \"quero guardar 5 mil\" → meta=4000, \"como juntar 10 mil\" → meta=10000). Se não houver meta, use null.\n- gastos: SE a mensagem informar VÁRIOS gastos de uma vez (ex.: \"550 de aluguel, 792 de consórcio e 400 de mercado\"), devolva TODOS como array em \"gastos\" (cada um com descricao/valor/categoria/tipo/data/parcelas/recorrente), e preencha também o PRIMEIRO nos campos principais. Senão deixe \"gastos\": null.\n- descricao: texto curto e claro (ex.: \"Almoço\", \"Uber\", \"Conta de luz\").\n- recorrente: true se for assinatura/conta fixa paga TODO MÊS (ex.: \"netflix mensal\", \"academia todo mês\", \"aluguel\", \"luz\", \"consórcio\"). Categorias \"Assinaturas\", \"Contas fixas\", \"Financiamento\", \"Consórcio\" e \"Moradia\" normalmente são recorrentes. Senão false.\n- data: se o usuário citar um dia específico, use YYYY-MM-DD; senão use null.\n- periodo: \"hoje\", \"semana\" ou \"mes\" (padrão \"mes\").\n- formato: \"excel\" ou \"pdf\" (padrão \"excel\").\n\nFormato exato da resposta (JSON):\n{\"intent\":\"...\",\"descricao\":\"...\",\"valor\":0,\"tipo\":\"despesa\",\"categoria\":\"...\",\"data\":null,\"periodo\":\"mes\",\"formato\":\"excel\",\"parcelas\":null,\"recorrente\":false,\"gastos\":null,\"meta\":null,\"alvo\":null,\"novo_valor\":null,\"nova_descricao\":null,\"nova_categoria\":null,\"nova_data\":null}"
               }
             ]
           },
           "options": {}
         },
-        "id": "6a7efaa4-8b38-47ce-a630-346d18469e31",
+        "id": "55122831-865b-4951-988b-af778166e31f",
         "name": "Classificar (4-Ollama)",
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.7,
@@ -723,7 +723,7 @@
             "maxTokensToSample": 400
           }
         },
-        "id": "8c711296-eefb-424e-a7c3-4578fb4607bf",
+        "id": "211ab15e-b3b3-47de-a09b-b1a972c2833b",
         "name": "Modelo Groq",
         "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
         "typeVersion": 1,
@@ -745,7 +745,7 @@
             "temperature": 0.1
           }
         },
-        "id": "deb34d17-620d-4f9b-a5d2-43a43847f380",
+        "id": "c4bfdb2a-25d9-4655-a349-3848bb2ad4ff",
         "name": "Modelo Gemini",
         "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
         "typeVersion": 1,
@@ -767,7 +767,7 @@
             "temperature": 0.1
           }
         },
-        "id": "365dfd20-9b1d-4204-8688-1731ce04d319",
+        "id": "68ce0cef-7eb2-42e4-9fb5-6879dcf96114",
         "name": "Modelo OpenRouter",
         "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
         "typeVersion": 1,
@@ -789,7 +789,7 @@
             "temperature": 0.2
           }
         },
-        "id": "18c7f73a-fd48-4c01-bd40-186e3678cd27",
+        "id": "1df42970-233a-4fbf-90a0-0cff692b0437",
         "name": "Modelo Ollama",
         "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
         "typeVersion": 1,
@@ -806,9 +806,9 @@
       },
       {
         "parameters": {
-          "jsCode": "const raw = ($input.first().json.text ?? '').toString();\nlet parsed = {};\ntry {\n  const m = raw.match(/\\{[\\s\\S]*\\}/);\n  parsed = JSON.parse(m ? m[0] : raw);\n} catch (e) { parsed = {}; }\nconst msg = $('Contexto').first().json;\nconst validIntents = ['registrar','resumo','relatorio','dica','limite','listar','remover','editar','conversa'];\nconst intent = validIntents.includes(parsed.intent) ? parsed.intent : 'conversa';\nlet valor = Number(parsed.valor ?? 0);\nif (!isFinite(valor) || valor < 0) valor = 0;\nvalor = Math.round(valor * 100) / 100;\nlet parcelaAtual = null, parcelasTotal = null;\nif (parsed.parcelas && typeof parsed.parcelas === 'object') {\n  parcelaAtual = Number(parsed.parcelas.atual) || null;\n  parcelasTotal = Number(parsed.parcelas.total) || null;\n}\nconst valorTotal = (parcelasTotal) ? Math.round(valor * parcelasTotal * 100) / 100 : null;\nconst novoValor = (intent === 'editar' && parsed.novo_valor != null)\n  ? (Math.round((Number(parsed.novo_valor) || 0) * 100) / 100) : null;\nconst catNorm = String(parsed.categoria ?? 'Outros').slice(0, 60) || 'Outros';\nconst recorrenteAuto = ['Assinaturas', 'Contas fixas', 'Financiamento', 'Moradia'].includes(catNorm);\nconst recorrente = (parsed.recorrente === true)\n  || (recorrenteAuto && parcelasTotal === null && valor > 0);\nlet multiGastos = null;\nif (Array.isArray(parsed.gastos) && parsed.gastos.length > 1) {\n  multiGastos = parsed.gastos.map((g) => {\n    const pc = (g && g.parcelas) || null;\n    let pa = (g && g.parcela_atual) ? Number(g.parcela_atual) : null;\n    let pt = (g && g.parcelas_total) ? Number(g.parcelas_total) : null;\n    if (pc && typeof pc === 'object') { pa = Number(pc.atual) || null; pt = Number(pc.total) || null; }\n    const catM = String((g && g.categoria) || 'Outros').slice(0, 60) || 'Outros';\n    let vM = Math.round((Number(g && g.valor) || 0) * 100) / 100;\n    if (!isFinite(vM) || vM < 0) vM = 0;\n    const vtM = pt ? Math.round(vM * pt * 100) / 100 : null;\n    const recAutoM = ['Assinaturas', 'Contas fixas', 'Financiamento', 'Moradia'].includes(catM);\n    const recM = (g && g.recorrente === true) || (recAutoM && pt === null && vM > 0);\n    return { descricao: String((g && g.descricao) || 'Gasto').slice(0, 200),\n      valor: vM, valor_total: vtM, parcela_atual: pa, parcelas_total: pt,\n      categoria: catM, tipo: (g && g.tipo === 'receita') ? 'receita' : 'despesa',\n      recorrente: recM,\n      data: (g && typeof g.data === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(g.data)) ? g.data : null };\n  }).filter((x) => x.valor > 0);\n}\nreturn [{ json: {\n  intent,\n  numero: msg.numero,\n  textoUsuario: ($('Definir texto').first().json.textoFinal || msg.texto),\n  pushName: msg.pushName,\n  descricao: String(parsed.descricao ?? '').slice(0, 200) || 'Gasto',\n  valor,\n  valor_total: valorTotal,\n  parcela_atual: parcelaAtual,\n  parcelas_total: parcelasTotal,\n  tipo: parsed.tipo === 'receita' ? 'receita' : 'despesa',\n  categoria: catNorm,\n  recorrente,\n  multiGastos,\n  data: (typeof parsed.data === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(parsed.data)) ? parsed.data : null,\n  periodo: ['hoje','semana','mes'].includes(parsed.periodo) ? parsed.periodo : 'mes',\n  formato: parsed.formato === 'pdf' ? 'pdf' : 'excel',\n  alvo: (parsed.alvo != null ? String(parsed.alvo).slice(0,120) : null),\n  novoValor,\n  novaDescricao: (parsed.nova_descricao != null ? String(parsed.nova_descricao).slice(0,120) : null),\n  novaCategoria: (parsed.nova_categoria != null ? String(parsed.nova_categoria).slice(0,60) : null),\n  novaData: (typeof parsed.nova_data === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(parsed.nova_data)) ? parsed.nova_data : null\n} }];"
+          "jsCode": "const raw = ($input.first().json.text ?? '').toString();\nlet parsed = {};\ntry {\n  const m = raw.match(/\\{[\\s\\S]*\\}/);\n  parsed = JSON.parse(m ? m[0] : raw);\n} catch (e) { parsed = {}; }\nconst msg = $('Contexto').first().json;\nconst validIntents = ['registrar','resumo','relatorio','dica','limite','listar','remover','editar','conversa'];\nconst intent = validIntents.includes(parsed.intent) ? parsed.intent : 'conversa';\nlet valor = Number(parsed.valor ?? 0);\nif (!isFinite(valor) || valor < 0) valor = 0;\nvalor = Math.round(valor * 100) / 100;\nlet parcelaAtual = null, parcelasTotal = null;\nif (parsed.parcelas && typeof parsed.parcelas === 'object') {\n  parcelaAtual = Number(parsed.parcelas.atual) || null;\n  parcelasTotal = Number(parsed.parcelas.total) || null;\n}\nconst valorTotal = (parcelasTotal) ? Math.round(valor * parcelasTotal * 100) / 100 : null;\nconst novoValor = (intent === 'editar' && parsed.novo_valor != null)\n  ? (Math.round((Number(parsed.novo_valor) || 0) * 100) / 100) : null;\nconst catNorm = String(parsed.categoria ?? 'Outros').slice(0, 60) || 'Outros';\nconst REC_AUTO = ['Assinaturas', 'Contas fixas', 'Financiamento', 'Consórcio', 'Moradia'];\nconst recorrenteAuto = REC_AUTO.includes(catNorm);\nconst recorrente = (parsed.recorrente === true)\n  || (recorrenteAuto && parcelasTotal === null && valor > 0);\nconst meta = (Number(parsed.meta) > 0) ? Math.round(Number(parsed.meta)) : null;\nlet multiGastos = null;\nif (Array.isArray(parsed.gastos) && parsed.gastos.length > 1) {\n  multiGastos = parsed.gastos.map((g) => {\n    const pc = (g && g.parcelas) || null;\n    let pa = (g && g.parcela_atual) ? Number(g.parcela_atual) : null;\n    let pt = (g && g.parcelas_total) ? Number(g.parcelas_total) : null;\n    if (pc && typeof pc === 'object') { pa = Number(pc.atual) || null; pt = Number(pc.total) || null; }\n    const catM = String((g && g.categoria) || 'Outros').slice(0, 60) || 'Outros';\n    let vM = Math.round((Number(g && g.valor) || 0) * 100) / 100;\n    if (!isFinite(vM) || vM < 0) vM = 0;\n    const vtM = pt ? Math.round(vM * pt * 100) / 100 : null;\n    const recAutoM = ['Assinaturas', 'Contas fixas', 'Financiamento', 'Consórcio', 'Moradia'].includes(catM);\n    const recM = (g && g.recorrente === true) || (recAutoM && pt === null && vM > 0);\n    return { descricao: String((g && g.descricao) || 'Gasto').slice(0, 200),\n      valor: vM, valor_total: vtM, parcela_atual: pa, parcelas_total: pt,\n      categoria: catM, tipo: (g && g.tipo === 'receita') ? 'receita' : 'despesa',\n      recorrente: recM,\n      data: (g && typeof g.data === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(g.data)) ? g.data : null };\n  }).filter((x) => x.valor > 0);\n}\nreturn [{ json: {\n  intent,\n  numero: msg.numero,\n  textoUsuario: ($('Definir texto').first().json.textoFinal || msg.texto),\n  pushName: msg.pushName,\n  descricao: String(parsed.descricao ?? '').slice(0, 200) || 'Gasto',\n  valor,\n  valor_total: valorTotal,\n  parcela_atual: parcelaAtual,\n  parcelas_total: parcelasTotal,\n  tipo: parsed.tipo === 'receita' ? 'receita' : 'despesa',\n  categoria: catNorm,\n  recorrente,\n  multiGastos,\n  meta,\n  data: (typeof parsed.data === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(parsed.data)) ? parsed.data : null,\n  periodo: ['hoje','semana','mes'].includes(parsed.periodo) ? parsed.periodo : 'mes',\n  formato: parsed.formato === 'pdf' ? 'pdf' : 'excel',\n  alvo: (parsed.alvo != null ? String(parsed.alvo).slice(0,120) : null),\n  novoValor,\n  novaDescricao: (parsed.nova_descricao != null ? String(parsed.nova_descricao).slice(0,120) : null),\n  novaCategoria: (parsed.nova_categoria != null ? String(parsed.nova_categoria).slice(0,60) : null),\n  novaData: (typeof parsed.nova_data === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(parsed.nova_data)) ? parsed.nova_data : null\n} }];"
         },
-        "id": "f49c6534-e650-4040-9b18-549ee664ceda",
+        "id": "6ed629bd-f2ab-45b2-a2a1-d2e4b96fc65d",
         "name": "Interpretar IA",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -831,7 +831,7 @@
                   },
                   "conditions": [
                     {
-                      "id": "402b4c99-32df-43a9-bf28-cedbb705d938",
+                      "id": "d4328421-b74b-4b7e-99e0-7ae282afaeba",
                       "leftValue": "={{ $json.intent }}",
                       "rightValue": "registrar",
                       "operator": {
@@ -855,7 +855,7 @@
                   },
                   "conditions": [
                     {
-                      "id": "cf8d69ef-38d5-4d1d-b21f-e9c120d9591d",
+                      "id": "b9acaca8-658b-4a83-bfe2-d9e0740addcc",
                       "leftValue": "={{ $json.intent }}",
                       "rightValue": "resumo",
                       "operator": {
@@ -879,7 +879,7 @@
                   },
                   "conditions": [
                     {
-                      "id": "c578a6bf-365a-40f6-aae2-8b71cfb18403",
+                      "id": "a48fc82f-8c46-461d-88c1-16c791d4af6d",
                       "leftValue": "={{ $json.intent }}",
                       "rightValue": "relatorio",
                       "operator": {
@@ -903,7 +903,7 @@
                   },
                   "conditions": [
                     {
-                      "id": "37df2a6d-9ea1-4099-9d8e-dc6e48adef9b",
+                      "id": "4035a988-85fc-4f89-ac9d-7e2679fa3e85",
                       "leftValue": "={{ $json.intent }}",
                       "rightValue": "dica",
                       "operator": {
@@ -927,7 +927,7 @@
                   },
                   "conditions": [
                     {
-                      "id": "c7e1d86b-861f-4598-9aa4-59f395b46cf8",
+                      "id": "1cfbccc3-ff1f-4211-857b-2e8e7b45b059",
                       "leftValue": "={{ $json.intent }}",
                       "rightValue": "limite",
                       "operator": {
@@ -951,7 +951,7 @@
                   },
                   "conditions": [
                     {
-                      "id": "d8162a1f-fa1c-4fa2-8586-010648a66834",
+                      "id": "5f512543-17d0-4b78-965e-cbdb445465fa",
                       "leftValue": "={{ $json.intent }}",
                       "rightValue": "listar",
                       "operator": {
@@ -975,7 +975,7 @@
                   },
                   "conditions": [
                     {
-                      "id": "68ea010e-1bb8-4dab-8d62-03ddbd2d149b",
+                      "id": "c033e0af-e416-41df-a7dc-1f4eb6041303",
                       "leftValue": "={{ $json.intent }}",
                       "rightValue": "editar",
                       "operator": {
@@ -999,7 +999,7 @@
                   },
                   "conditions": [
                     {
-                      "id": "ddbb2919-cefd-402f-ba48-391b14acbf23",
+                      "id": "65d4cbe9-9dd1-42fd-b3eb-637fffa9a02b",
                       "leftValue": "={{ $json.intent }}",
                       "rightValue": "remover",
                       "operator": {
@@ -1020,7 +1020,7 @@
             "fallbackOutputKey": "conversa"
           }
         },
-        "id": "e276495c-016d-41b7-b86b-339880360521",
+        "id": "152e7f40-0624-41ec-b473-0ed869dd0f59",
         "name": "Roteador",
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3.2,
@@ -1040,7 +1040,7 @@
             },
             "conditions": [
               {
-                "id": "a1e2712d-bb69-4cf6-a125-1d2882f9eba0",
+                "id": "0ec74064-9d3c-426f-b809-500dd8d39716",
                 "leftValue": "={{ Array.isArray($json.multiGastos) && $json.multiGastos.length > 1 }}",
                 "rightValue": "",
                 "operator": {
@@ -1054,7 +1054,7 @@
           },
           "options": {}
         },
-        "id": "6fc6e97d-ab0b-4dcd-9505-7221f87047ba",
+        "id": "d68a231a-34a9-4d35-9f77-9442f3d961c0",
         "name": "Vários gastos?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
@@ -1071,7 +1071,7 @@
             "queryReplacement": "={{ [ $json.numero, JSON.stringify($json.multiGastos) ] }}"
           }
         },
-        "id": "c800fa5f-19ec-43f5-9da8-91bac7ebb1ea",
+        "id": "567c85f7-e40a-47cb-a53a-eb114acec097",
         "name": "Gravar vários",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -1090,7 +1090,7 @@
         "parameters": {
           "jsCode": "const r = $input.first().json || {};\nlet inseridos = r.inseridos || [];\nif (typeof inseridos === 'string') { try { inseridos = JSON.parse(inseridos); } catch (e) { inseridos = []; } }\nif (!Array.isArray(inseridos) || !inseridos.length) return [{ json: { text: '🤖 Nada foi registrado.' } }];\nconst brl = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nconst linhas = inseridos.map((g) => `${g.descricao} — *${brl(g.valor)}* (${g.categoria})${g.recorrente ? ' 🔁' : ''}`).join('\\n');\nconst soma = inseridos.reduce((s, g) => s + Number(g.valor || 0), 0);\nreturn [{ json: { text: `✅ *Registrei tudo:*\\n${linhas}\\n\\n💰 *Soma lançada:* ${brl(soma)}` } }];"
         },
-        "id": "76c7e4df-4f5e-47bb-8abf-4d5db5ccc764",
+        "id": "889dc179-9c48-4c3b-ba28-63e6ebf6ccd1",
         "name": "Confirmar vários",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1107,7 +1107,7 @@
             "queryReplacement": "={{ [ $json.numero, $json.descricao, $json.valor, $json.valor_total, $json.parcela_atual, $json.parcelas_total, $json.categoria, $json.tipo, $json.data, $json.recorrente ] }}"
           }
         },
-        "id": "191d66de-415c-491d-89a1-0e2a729b4f25",
+        "id": "ea20fe10-3bf4-44a6-b04b-a3f1d7f6970c",
         "name": "Gravar gasto",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -1130,7 +1130,7 @@
             "queryReplacement": "={{ [ $json.numero, $json.periodo ] }}"
           }
         },
-        "id": "cf0a730d-a793-46c7-8f6e-c7aee83855d9",
+        "id": "c033eae7-a380-498d-a2d8-e98f2220b2ec",
         "name": "Resumo",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -1153,7 +1153,7 @@
             "queryReplacement": "={{ [ $json.numero, $json.periodo ] }}"
           }
         },
-        "id": "bb6ef38b-87bc-4fa8-be21-f6e5d8777d0e",
+        "id": "6705b99a-8505-4153-a538-96db94b88557",
         "name": "Dados relatório",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -1176,7 +1176,7 @@
             "queryReplacement": "={{ [ $json.numero ] }}"
           }
         },
-        "id": "b43382e3-48d2-4034-b044-84a29c8c0c70",
+        "id": "0782cf58-8b2c-444a-b7a2-92c00efa73d3",
         "name": "Análise",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -1199,7 +1199,7 @@
             "queryReplacement": "={{ [ $json.numero, $json.categoria, $json.valor ] }}"
           }
         },
-        "id": "aa0c9b0e-9462-4584-bc17-406a1f3ac7ca",
+        "id": "7eef2e94-551f-44b2-ae79-8e8fd97a0a0e",
         "name": "Gravar limite",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -1222,7 +1222,7 @@
             "queryReplacement": "={{ [ $('Interpretar IA').first().json.numero ] }}"
           }
         },
-        "id": "9a9af9e2-9bb2-4b06-adb4-dfc88dd5247f",
+        "id": "195dd601-efdb-44ba-9a1a-bf98f54c24ef",
         "name": "Listar limites",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -1239,9 +1239,9 @@
       },
       {
         "parameters": {
-          "jsCode": "const base = $('Interpretar IA').first().json;\nconst item = $input.first().json;\nconst dados = {};\nif (base.intent === 'registrar') {\n  dados.gasto = item.gasto;\n  dados.total_hoje = item.total_hoje;\n  dados.total_semana = item.total_semana;\n  dados.total_mes = item.total_mes;\n  dados.limites = item.limites;\n} else if (base.intent === 'resumo') {\n  dados.periodo = item.periodo;\n  dados.total = item.total;\n  dados.por_categoria = item.por_categoria;\n} else if (base.intent === 'dica') {\n  dados.total_mes = item.total_mes;\n  dados.renda_mes = item.renda_mes;\n  dados.por_categoria = item.por_categoria;\n  dados.limites = item.limites;\n} else if (base.intent === 'limite') {\n  dados.limites = item.limites;\n  dados.categoria = base.categoria;\n  dados.valor = base.valor;\n} else if (base.intent === 'conversa') {\n  dados.total_mes = item.total_mes;\n  dados.renda_mes = item.renda_mes;\n  dados.por_categoria = item.por_categoria;\n  dados.limites = item.limites;\n}\nreturn [{ json: {\n  intent: base.intent,\n  mensagemUsuario: base.textoUsuario,\n  nome: base.pushName,\n  dados\n} }];"
+          "jsCode": "const base = $('Interpretar IA').first().json;\nconst item = $input.first().json;\nconst dados = {};\nif (base.intent === 'registrar') {\n  dados.gasto = item.gasto;\n  dados.total_hoje = item.total_hoje;\n  dados.total_semana = item.total_semana;\n  dados.total_mes = item.total_mes;\n  dados.limites = item.limites;\n} else if (base.intent === 'resumo') {\n  dados.periodo = item.periodo;\n  dados.total = item.total;\n  dados.por_categoria = item.por_categoria;\n} else if (base.intent === 'dica') {\n  dados.total_mes = item.total_mes;\n  dados.renda_mes = item.renda_mes;\n  dados.por_categoria = item.por_categoria;\n  dados.limites = item.limites;\n  dados.meta = base.meta;\n} else if (base.intent === 'limite') {\n  dados.limites = item.limites;\n  dados.categoria = base.categoria;\n  dados.valor = base.valor;\n} else if (base.intent === 'conversa') {\n  dados.total_mes = item.total_mes;\n  dados.renda_mes = item.renda_mes;\n  dados.por_categoria = item.por_categoria;\n  dados.limites = item.limites;\n  dados.meta = base.meta;\n}\nreturn [{ json: {\n  intent: base.intent,\n  mensagemUsuario: base.textoUsuario,\n  nome: base.pushName,\n  dados\n} }];"
         },
-        "id": "83c818b4-73d7-4dd5-a01b-5602d5bfb46e",
+        "id": "3ff9c720-6620-464f-a1ae-cccd8453fc29",
         "name": "Normalizar resposta",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1259,13 +1259,13 @@
               {
                 "type": "SystemMessagePromptTemplate",
                 "messageType": "text",
-                "message": "=Você é o \"Agente Financeiro\", um assistente financeiro pessoal e amigo dentro do WhatsApp.\nEscreva em PORTUGUÊS SIMPLES, frases curtas e diretas, como um amigo que entende de dinheiro.\nNADA de jargão financeiro: troque \"excedente\" por \"o que sobra\", \"otimizar\" por \"ajustar\", \"renda\" por \"o que você ganha\", \"alavancar\" por \"aumentar\".\nUse números REDONDOS e fáceis de entender, emojis leves (1 ou 2 por bloco).\nSEMPRE baseado nos dados reais do usuário — nunca responda com texto genérico/padrão.\nFormate para WhatsApp: *negrito* com asteriscos; NÃO use títulos \"#\" nem tabelas markdown.\n\nDados da interação (JSON):\n{{ JSON.stringify($json) }}\n\nEscreva a mensagem final para o usuário de acordo com a intenção \"{{ $json.intent }}\":\n- registrar: confirme o lançamento (valor e categoria) e mostre o total do MÊS. Se parcelado, diga \"parcela X de N\" e quantas FALTAM; se recorrente = true, diga que é \"mensal (todo mês)\". Se houver limite para a categoria, avise quanto já foi usado (% e valor). Observação curta e amigável.\n- resumo: mostre o total do período e a divisão por categoria, da maior para a menor, com emojis. Destaque a categoria que mais pesou.\n- dica: se o usuário tiver uma META (ex.: \"juntar 4000\"), monte um plano REALISTA e SIMPLES, assim:\n  1) MOSTRE o que sobra por mês (\"o que você ganha\" menos os gastos).\n  2) NÃO mande guardar tudo o que sobra. Sugira COMEÇAR com um valor REDONDO e BAIXO que caiba no dia a dia dele (ex.: R$100, R$150, R$200/mês) — começar devagar pra não desistir.\n  3) CALCULE e diga: \"guardando R$200/mês, em 20 meses você chega aos R$4.000\".\n  4) Dê 2 a 3 dicas práticas e específicas DO DIA A DIA nas categorias que mais pesam nele (ex.: reduzir um pouco no Mercado, rever o Pessoal).\n  Se não houver meta, dê 3 sugestões práticas baseadas nos maiores gastos dele. SEMPRE simples, concreto e humano.\n- limite: se o usuário definiu um valor, confirme o novo limite; se foi só consulta, liste os limites com quanto já gastou e o quanto resta. Se não houver, diga como criar (ex.: \"definir limite de mercado 500\").\n- conversa: responda de forma prestativa e simples. Se a pergunta for sobre finanças (quanto, economizar, juntar, cortar, organizar), USE os dados reais (dados.renda_mes, dados.total_mes, dados.por_categoria): mostre o que sobra por mês e, se houver meta, siga o ESTILO REALISTA do \"dica\" (começar com um valor baixo/redondo e calcule em quantos meses ele chega lá). NUNCA diga \"não tenho seus gastos\" se houver dados, e NUNCA trate o total de gastos como se fosse a renda. Se for saudação, apresente-se com um menu curto. Se o usuário for admin, mencione que pode trocar o código com \"código de convite NOVOCODIGO\".\n\nNUNCA invente valores que não estejam nos dados acima. Seja conciso e humano."
+                "message": "=Você é o \"Agente Financeiro\", um assistente financeiro pessoal e amigo dentro do WhatsApp.\nEscreva em PORTUGUÊS SIMPLES, frases curtas e diretas, como um amigo que entende de dinheiro.\nNADA de jargão financeiro: troque \"excedente\" por \"o que sobra\", \"otimizar\" por \"ajustar\", \"renda\" por \"o que você ganha\", \"alavancar\" por \"aumentar\".\nUse números REDONDOS e fáceis de entender, emojis leves (1 ou 2 por bloco).\nSEMPRE baseado nos dados reais do usuário — nunca responda com texto genérico/padrão.\nFormate para WhatsApp: *negrito* com asteriscos; NÃO use títulos \"#\" nem tabelas markdown.\n\nDados da interação (JSON):\n{{ JSON.stringify($json) }}\n\nEscreva a mensagem final para o usuário de acordo com a intenção \"{{ $json.intent }}\":\n- registrar: confirme o lançamento (valor e categoria) e mostre o total do MÊS. Se parcelado, diga \"parcela X de N\" e quantas FALTAM; se recorrente = true, diga que é \"mensal (todo mês)\". Se houver limite para a categoria, avise quanto já foi usado (% e valor). Observação curta e amigável.\n- resumo: mostre o total do período e a divisão por categoria, da maior para a menor, com emojis. Destaque a categoria que mais pesou.\n- dica: se o usuário tiver uma META (dados.meta > 0):\n  1) MOSTRE o que sobra por mês (\"o que você ganha\" menos os gastos).\n  2) PERGUNTE: \"quanto você consegue guardar por mês?\" — NÃO calcule o prazo ainda (a próxima resposta fará isso).\n     MAS se o usuário JÁ disse na própria mensagem quanto vai guardar por mês, calcule agora: \"guardando R$X/mês, em Y meses você chega aos R$Z\".\n  Se NÃO houver meta, dê 3 sugestões práticas baseadas nos maiores gastos dele. SEMPRE simples, concreto e humano.\n- limite: se o usuário definiu um valor, confirme o novo limite; se foi só consulta, liste os limites com quanto já gastou e o quanto resta. Se não houver, diga como criar (ex.: \"definir limite de mercado 500\").\n- conversa: responda de forma prestativa e simples. Se a pergunta for sobre finanças (quanto, economizar, juntar, cortar, organizar), USE os dados reais (dados.renda_mes, dados.total_mes, dados.por_categoria): mostre o que sobra por mês e, se houver meta (dados.meta > 0), PERGUNTE \"quanto você consegue guardar por mês?\" (ou calcule se ele já disse o valor mensal na própria mensagem). NUNCA diga \"não tenho seus gastos\" se houver dados, e NUNCA trate o total de gastos como se fosse a renda. Se for saudação, apresente-se com um menu curto. Se o usuário for admin, mencione que pode trocar o código com \"código de convite NOVOCODIGO\".\n\nNUNCA invente valores que não estejam nos dados acima. Seja conciso e humano."
               }
             ]
           },
           "options": {}
         },
-        "id": "78d09286-38a3-4f8d-8aa9-527ed31305ca",
+        "id": "2e7a503e-53b8-4a1e-bb96-41a76a0aeb15",
         "name": "Formatar (1-Groq)",
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.7,
@@ -1284,13 +1284,13 @@
               {
                 "type": "SystemMessagePromptTemplate",
                 "messageType": "text",
-                "message": "=Você é o \"Agente Financeiro\", um assistente financeiro pessoal e amigo dentro do WhatsApp.\nEscreva em PORTUGUÊS SIMPLES, frases curtas e diretas, como um amigo que entende de dinheiro.\nNADA de jargão financeiro: troque \"excedente\" por \"o que sobra\", \"otimizar\" por \"ajustar\", \"renda\" por \"o que você ganha\", \"alavancar\" por \"aumentar\".\nUse números REDONDOS e fáceis de entender, emojis leves (1 ou 2 por bloco).\nSEMPRE baseado nos dados reais do usuário — nunca responda com texto genérico/padrão.\nFormate para WhatsApp: *negrito* com asteriscos; NÃO use títulos \"#\" nem tabelas markdown.\n\nDados da interação (JSON):\n{{ JSON.stringify($json) }}\n\nEscreva a mensagem final para o usuário de acordo com a intenção \"{{ $json.intent }}\":\n- registrar: confirme o lançamento (valor e categoria) e mostre o total do MÊS. Se parcelado, diga \"parcela X de N\" e quantas FALTAM; se recorrente = true, diga que é \"mensal (todo mês)\". Se houver limite para a categoria, avise quanto já foi usado (% e valor). Observação curta e amigável.\n- resumo: mostre o total do período e a divisão por categoria, da maior para a menor, com emojis. Destaque a categoria que mais pesou.\n- dica: se o usuário tiver uma META (ex.: \"juntar 4000\"), monte um plano REALISTA e SIMPLES, assim:\n  1) MOSTRE o que sobra por mês (\"o que você ganha\" menos os gastos).\n  2) NÃO mande guardar tudo o que sobra. Sugira COMEÇAR com um valor REDONDO e BAIXO que caiba no dia a dia dele (ex.: R$100, R$150, R$200/mês) — começar devagar pra não desistir.\n  3) CALCULE e diga: \"guardando R$200/mês, em 20 meses você chega aos R$4.000\".\n  4) Dê 2 a 3 dicas práticas e específicas DO DIA A DIA nas categorias que mais pesam nele (ex.: reduzir um pouco no Mercado, rever o Pessoal).\n  Se não houver meta, dê 3 sugestões práticas baseadas nos maiores gastos dele. SEMPRE simples, concreto e humano.\n- limite: se o usuário definiu um valor, confirme o novo limite; se foi só consulta, liste os limites com quanto já gastou e o quanto resta. Se não houver, diga como criar (ex.: \"definir limite de mercado 500\").\n- conversa: responda de forma prestativa e simples. Se a pergunta for sobre finanças (quanto, economizar, juntar, cortar, organizar), USE os dados reais (dados.renda_mes, dados.total_mes, dados.por_categoria): mostre o que sobra por mês e, se houver meta, siga o ESTILO REALISTA do \"dica\" (começar com um valor baixo/redondo e calcule em quantos meses ele chega lá). NUNCA diga \"não tenho seus gastos\" se houver dados, e NUNCA trate o total de gastos como se fosse a renda. Se for saudação, apresente-se com um menu curto. Se o usuário for admin, mencione que pode trocar o código com \"código de convite NOVOCODIGO\".\n\nNUNCA invente valores que não estejam nos dados acima. Seja conciso e humano."
+                "message": "=Você é o \"Agente Financeiro\", um assistente financeiro pessoal e amigo dentro do WhatsApp.\nEscreva em PORTUGUÊS SIMPLES, frases curtas e diretas, como um amigo que entende de dinheiro.\nNADA de jargão financeiro: troque \"excedente\" por \"o que sobra\", \"otimizar\" por \"ajustar\", \"renda\" por \"o que você ganha\", \"alavancar\" por \"aumentar\".\nUse números REDONDOS e fáceis de entender, emojis leves (1 ou 2 por bloco).\nSEMPRE baseado nos dados reais do usuário — nunca responda com texto genérico/padrão.\nFormate para WhatsApp: *negrito* com asteriscos; NÃO use títulos \"#\" nem tabelas markdown.\n\nDados da interação (JSON):\n{{ JSON.stringify($json) }}\n\nEscreva a mensagem final para o usuário de acordo com a intenção \"{{ $json.intent }}\":\n- registrar: confirme o lançamento (valor e categoria) e mostre o total do MÊS. Se parcelado, diga \"parcela X de N\" e quantas FALTAM; se recorrente = true, diga que é \"mensal (todo mês)\". Se houver limite para a categoria, avise quanto já foi usado (% e valor). Observação curta e amigável.\n- resumo: mostre o total do período e a divisão por categoria, da maior para a menor, com emojis. Destaque a categoria que mais pesou.\n- dica: se o usuário tiver uma META (dados.meta > 0):\n  1) MOSTRE o que sobra por mês (\"o que você ganha\" menos os gastos).\n  2) PERGUNTE: \"quanto você consegue guardar por mês?\" — NÃO calcule o prazo ainda (a próxima resposta fará isso).\n     MAS se o usuário JÁ disse na própria mensagem quanto vai guardar por mês, calcule agora: \"guardando R$X/mês, em Y meses você chega aos R$Z\".\n  Se NÃO houver meta, dê 3 sugestões práticas baseadas nos maiores gastos dele. SEMPRE simples, concreto e humano.\n- limite: se o usuário definiu um valor, confirme o novo limite; se foi só consulta, liste os limites com quanto já gastou e o quanto resta. Se não houver, diga como criar (ex.: \"definir limite de mercado 500\").\n- conversa: responda de forma prestativa e simples. Se a pergunta for sobre finanças (quanto, economizar, juntar, cortar, organizar), USE os dados reais (dados.renda_mes, dados.total_mes, dados.por_categoria): mostre o que sobra por mês e, se houver meta (dados.meta > 0), PERGUNTE \"quanto você consegue guardar por mês?\" (ou calcule se ele já disse o valor mensal na própria mensagem). NUNCA diga \"não tenho seus gastos\" se houver dados, e NUNCA trate o total de gastos como se fosse a renda. Se for saudação, apresente-se com um menu curto. Se o usuário for admin, mencione que pode trocar o código com \"código de convite NOVOCODIGO\".\n\nNUNCA invente valores que não estejam nos dados acima. Seja conciso e humano."
               }
             ]
           },
           "options": {}
         },
-        "id": "58a969c4-3955-4574-8366-44a4f84ecd45",
+        "id": "f9b8bd9d-def0-4a62-a79a-c7f35420e6a6",
         "name": "Formatar (2-Gemini)",
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.7,
@@ -1309,13 +1309,13 @@
               {
                 "type": "SystemMessagePromptTemplate",
                 "messageType": "text",
-                "message": "=Você é o \"Agente Financeiro\", um assistente financeiro pessoal e amigo dentro do WhatsApp.\nEscreva em PORTUGUÊS SIMPLES, frases curtas e diretas, como um amigo que entende de dinheiro.\nNADA de jargão financeiro: troque \"excedente\" por \"o que sobra\", \"otimizar\" por \"ajustar\", \"renda\" por \"o que você ganha\", \"alavancar\" por \"aumentar\".\nUse números REDONDOS e fáceis de entender, emojis leves (1 ou 2 por bloco).\nSEMPRE baseado nos dados reais do usuário — nunca responda com texto genérico/padrão.\nFormate para WhatsApp: *negrito* com asteriscos; NÃO use títulos \"#\" nem tabelas markdown.\n\nDados da interação (JSON):\n{{ JSON.stringify($json) }}\n\nEscreva a mensagem final para o usuário de acordo com a intenção \"{{ $json.intent }}\":\n- registrar: confirme o lançamento (valor e categoria) e mostre o total do MÊS. Se parcelado, diga \"parcela X de N\" e quantas FALTAM; se recorrente = true, diga que é \"mensal (todo mês)\". Se houver limite para a categoria, avise quanto já foi usado (% e valor). Observação curta e amigável.\n- resumo: mostre o total do período e a divisão por categoria, da maior para a menor, com emojis. Destaque a categoria que mais pesou.\n- dica: se o usuário tiver uma META (ex.: \"juntar 4000\"), monte um plano REALISTA e SIMPLES, assim:\n  1) MOSTRE o que sobra por mês (\"o que você ganha\" menos os gastos).\n  2) NÃO mande guardar tudo o que sobra. Sugira COMEÇAR com um valor REDONDO e BAIXO que caiba no dia a dia dele (ex.: R$100, R$150, R$200/mês) — começar devagar pra não desistir.\n  3) CALCULE e diga: \"guardando R$200/mês, em 20 meses você chega aos R$4.000\".\n  4) Dê 2 a 3 dicas práticas e específicas DO DIA A DIA nas categorias que mais pesam nele (ex.: reduzir um pouco no Mercado, rever o Pessoal).\n  Se não houver meta, dê 3 sugestões práticas baseadas nos maiores gastos dele. SEMPRE simples, concreto e humano.\n- limite: se o usuário definiu um valor, confirme o novo limite; se foi só consulta, liste os limites com quanto já gastou e o quanto resta. Se não houver, diga como criar (ex.: \"definir limite de mercado 500\").\n- conversa: responda de forma prestativa e simples. Se a pergunta for sobre finanças (quanto, economizar, juntar, cortar, organizar), USE os dados reais (dados.renda_mes, dados.total_mes, dados.por_categoria): mostre o que sobra por mês e, se houver meta, siga o ESTILO REALISTA do \"dica\" (começar com um valor baixo/redondo e calcule em quantos meses ele chega lá). NUNCA diga \"não tenho seus gastos\" se houver dados, e NUNCA trate o total de gastos como se fosse a renda. Se for saudação, apresente-se com um menu curto. Se o usuário for admin, mencione que pode trocar o código com \"código de convite NOVOCODIGO\".\n\nNUNCA invente valores que não estejam nos dados acima. Seja conciso e humano."
+                "message": "=Você é o \"Agente Financeiro\", um assistente financeiro pessoal e amigo dentro do WhatsApp.\nEscreva em PORTUGUÊS SIMPLES, frases curtas e diretas, como um amigo que entende de dinheiro.\nNADA de jargão financeiro: troque \"excedente\" por \"o que sobra\", \"otimizar\" por \"ajustar\", \"renda\" por \"o que você ganha\", \"alavancar\" por \"aumentar\".\nUse números REDONDOS e fáceis de entender, emojis leves (1 ou 2 por bloco).\nSEMPRE baseado nos dados reais do usuário — nunca responda com texto genérico/padrão.\nFormate para WhatsApp: *negrito* com asteriscos; NÃO use títulos \"#\" nem tabelas markdown.\n\nDados da interação (JSON):\n{{ JSON.stringify($json) }}\n\nEscreva a mensagem final para o usuário de acordo com a intenção \"{{ $json.intent }}\":\n- registrar: confirme o lançamento (valor e categoria) e mostre o total do MÊS. Se parcelado, diga \"parcela X de N\" e quantas FALTAM; se recorrente = true, diga que é \"mensal (todo mês)\". Se houver limite para a categoria, avise quanto já foi usado (% e valor). Observação curta e amigável.\n- resumo: mostre o total do período e a divisão por categoria, da maior para a menor, com emojis. Destaque a categoria que mais pesou.\n- dica: se o usuário tiver uma META (dados.meta > 0):\n  1) MOSTRE o que sobra por mês (\"o que você ganha\" menos os gastos).\n  2) PERGUNTE: \"quanto você consegue guardar por mês?\" — NÃO calcule o prazo ainda (a próxima resposta fará isso).\n     MAS se o usuário JÁ disse na própria mensagem quanto vai guardar por mês, calcule agora: \"guardando R$X/mês, em Y meses você chega aos R$Z\".\n  Se NÃO houver meta, dê 3 sugestões práticas baseadas nos maiores gastos dele. SEMPRE simples, concreto e humano.\n- limite: se o usuário definiu um valor, confirme o novo limite; se foi só consulta, liste os limites com quanto já gastou e o quanto resta. Se não houver, diga como criar (ex.: \"definir limite de mercado 500\").\n- conversa: responda de forma prestativa e simples. Se a pergunta for sobre finanças (quanto, economizar, juntar, cortar, organizar), USE os dados reais (dados.renda_mes, dados.total_mes, dados.por_categoria): mostre o que sobra por mês e, se houver meta (dados.meta > 0), PERGUNTE \"quanto você consegue guardar por mês?\" (ou calcule se ele já disse o valor mensal na própria mensagem). NUNCA diga \"não tenho seus gastos\" se houver dados, e NUNCA trate o total de gastos como se fosse a renda. Se for saudação, apresente-se com um menu curto. Se o usuário for admin, mencione que pode trocar o código com \"código de convite NOVOCODIGO\".\n\nNUNCA invente valores que não estejam nos dados acima. Seja conciso e humano."
               }
             ]
           },
           "options": {}
         },
-        "id": "c8ca9cfe-5a59-4f06-b82f-7288294fd390",
+        "id": "e148ed7b-0c9e-4874-a0a4-f4f17874fdb2",
         "name": "Formatar (3-OpenRouter)",
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.7,
@@ -1334,13 +1334,13 @@
               {
                 "type": "SystemMessagePromptTemplate",
                 "messageType": "text",
-                "message": "=Você é o \"Agente Financeiro\", um assistente financeiro pessoal e amigo dentro do WhatsApp.\nEscreva em PORTUGUÊS SIMPLES, frases curtas e diretas, como um amigo que entende de dinheiro.\nNADA de jargão financeiro: troque \"excedente\" por \"o que sobra\", \"otimizar\" por \"ajustar\", \"renda\" por \"o que você ganha\", \"alavancar\" por \"aumentar\".\nUse números REDONDOS e fáceis de entender, emojis leves (1 ou 2 por bloco).\nSEMPRE baseado nos dados reais do usuário — nunca responda com texto genérico/padrão.\nFormate para WhatsApp: *negrito* com asteriscos; NÃO use títulos \"#\" nem tabelas markdown.\n\nDados da interação (JSON):\n{{ JSON.stringify($json) }}\n\nEscreva a mensagem final para o usuário de acordo com a intenção \"{{ $json.intent }}\":\n- registrar: confirme o lançamento (valor e categoria) e mostre o total do MÊS. Se parcelado, diga \"parcela X de N\" e quantas FALTAM; se recorrente = true, diga que é \"mensal (todo mês)\". Se houver limite para a categoria, avise quanto já foi usado (% e valor). Observação curta e amigável.\n- resumo: mostre o total do período e a divisão por categoria, da maior para a menor, com emojis. Destaque a categoria que mais pesou.\n- dica: se o usuário tiver uma META (ex.: \"juntar 4000\"), monte um plano REALISTA e SIMPLES, assim:\n  1) MOSTRE o que sobra por mês (\"o que você ganha\" menos os gastos).\n  2) NÃO mande guardar tudo o que sobra. Sugira COMEÇAR com um valor REDONDO e BAIXO que caiba no dia a dia dele (ex.: R$100, R$150, R$200/mês) — começar devagar pra não desistir.\n  3) CALCULE e diga: \"guardando R$200/mês, em 20 meses você chega aos R$4.000\".\n  4) Dê 2 a 3 dicas práticas e específicas DO DIA A DIA nas categorias que mais pesam nele (ex.: reduzir um pouco no Mercado, rever o Pessoal).\n  Se não houver meta, dê 3 sugestões práticas baseadas nos maiores gastos dele. SEMPRE simples, concreto e humano.\n- limite: se o usuário definiu um valor, confirme o novo limite; se foi só consulta, liste os limites com quanto já gastou e o quanto resta. Se não houver, diga como criar (ex.: \"definir limite de mercado 500\").\n- conversa: responda de forma prestativa e simples. Se a pergunta for sobre finanças (quanto, economizar, juntar, cortar, organizar), USE os dados reais (dados.renda_mes, dados.total_mes, dados.por_categoria): mostre o que sobra por mês e, se houver meta, siga o ESTILO REALISTA do \"dica\" (começar com um valor baixo/redondo e calcule em quantos meses ele chega lá). NUNCA diga \"não tenho seus gastos\" se houver dados, e NUNCA trate o total de gastos como se fosse a renda. Se for saudação, apresente-se com um menu curto. Se o usuário for admin, mencione que pode trocar o código com \"código de convite NOVOCODIGO\".\n\nNUNCA invente valores que não estejam nos dados acima. Seja conciso e humano."
+                "message": "=Você é o \"Agente Financeiro\", um assistente financeiro pessoal e amigo dentro do WhatsApp.\nEscreva em PORTUGUÊS SIMPLES, frases curtas e diretas, como um amigo que entende de dinheiro.\nNADA de jargão financeiro: troque \"excedente\" por \"o que sobra\", \"otimizar\" por \"ajustar\", \"renda\" por \"o que você ganha\", \"alavancar\" por \"aumentar\".\nUse números REDONDOS e fáceis de entender, emojis leves (1 ou 2 por bloco).\nSEMPRE baseado nos dados reais do usuário — nunca responda com texto genérico/padrão.\nFormate para WhatsApp: *negrito* com asteriscos; NÃO use títulos \"#\" nem tabelas markdown.\n\nDados da interação (JSON):\n{{ JSON.stringify($json) }}\n\nEscreva a mensagem final para o usuário de acordo com a intenção \"{{ $json.intent }}\":\n- registrar: confirme o lançamento (valor e categoria) e mostre o total do MÊS. Se parcelado, diga \"parcela X de N\" e quantas FALTAM; se recorrente = true, diga que é \"mensal (todo mês)\". Se houver limite para a categoria, avise quanto já foi usado (% e valor). Observação curta e amigável.\n- resumo: mostre o total do período e a divisão por categoria, da maior para a menor, com emojis. Destaque a categoria que mais pesou.\n- dica: se o usuário tiver uma META (dados.meta > 0):\n  1) MOSTRE o que sobra por mês (\"o que você ganha\" menos os gastos).\n  2) PERGUNTE: \"quanto você consegue guardar por mês?\" — NÃO calcule o prazo ainda (a próxima resposta fará isso).\n     MAS se o usuário JÁ disse na própria mensagem quanto vai guardar por mês, calcule agora: \"guardando R$X/mês, em Y meses você chega aos R$Z\".\n  Se NÃO houver meta, dê 3 sugestões práticas baseadas nos maiores gastos dele. SEMPRE simples, concreto e humano.\n- limite: se o usuário definiu um valor, confirme o novo limite; se foi só consulta, liste os limites com quanto já gastou e o quanto resta. Se não houver, diga como criar (ex.: \"definir limite de mercado 500\").\n- conversa: responda de forma prestativa e simples. Se a pergunta for sobre finanças (quanto, economizar, juntar, cortar, organizar), USE os dados reais (dados.renda_mes, dados.total_mes, dados.por_categoria): mostre o que sobra por mês e, se houver meta (dados.meta > 0), PERGUNTE \"quanto você consegue guardar por mês?\" (ou calcule se ele já disse o valor mensal na própria mensagem). NUNCA diga \"não tenho seus gastos\" se houver dados, e NUNCA trate o total de gastos como se fosse a renda. Se for saudação, apresente-se com um menu curto. Se o usuário for admin, mencione que pode trocar o código com \"código de convite NOVOCODIGO\".\n\nNUNCA invente valores que não estejam nos dados acima. Seja conciso e humano."
               }
             ]
           },
           "options": {}
         },
-        "id": "28a6e0f8-5839-4e29-af06-4eeb79a3a3dd",
+        "id": "74a23038-fa4a-4039-bda6-a0e6c7803cbe",
         "name": "Formatar (4-Ollama)",
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.7,
@@ -1367,7 +1367,7 @@
           "jsonBody": "={{ JSON.stringify({ number: $('Contexto').first().json.jidEnvio, text: $json.text, delay: 1200 }) }}",
           "options": {}
         },
-        "id": "9271e095-d614-4e45-8f4b-713b07bcd161",
+        "id": "a2a5839d-05f1-42e3-9c85-bf216233cf37",
         "name": "Enviar texto",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
@@ -1381,7 +1381,7 @@
         "parameters": {
           "jsCode": "const base = $('Interpretar IA').first().json;\nconst rows = $input.all().map(i => i.json);\nconst total = rows.reduce((s, r) => s + Number(r.valor || 0), 0);\nconst mapa = {};\nfor (const r of rows) mapa[r.categoria] = (mapa[r.categoria] || 0) + Number(r.valor || 0);\nconst por_categoria = Object.entries(mapa).map(([categoria, t]) => ({ categoria, total: t })).sort((a, b) => b.total - a.total);\nreturn [{ json: {\n  numero: base.numero,\n  periodo: base.periodo,\n  formato: base.formato,\n  gerado_em: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),\n  total,\n  por_categoria,\n  linhas: rows\n} }];"
         },
-        "id": "1088473c-c926-4ee1-876a-8d0447582a3d",
+        "id": "5c8e43ac-d273-4693-b32e-be66fd8beea5",
         "name": "Montar relatório",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1401,7 +1401,7 @@
             },
             "conditions": [
               {
-                "id": "7ea91cd1-02cf-4605-8f82-19bbb3f443bb",
+                "id": "14c17606-f36c-4759-8136-6e8f0b6b64bd",
                 "leftValue": "={{ $json.formato === 'pdf' }}",
                 "rightValue": "",
                 "operator": {
@@ -1415,7 +1415,7 @@
           },
           "options": {}
         },
-        "id": "76b8a1f7-2216-415c-afbb-0d4d4c8a4c8f",
+        "id": "5c9d598b-99d8-4cbd-848a-031c4466ee76",
         "name": "Formato PDF?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
@@ -1435,7 +1435,7 @@
             "headerRow": true
           }
         },
-        "id": "7831c7b2-8232-4a35-b8c6-c5f029464775",
+        "id": "cb86a0f7-2f78-4c18-9619-fa9ef57f6490",
         "name": "Gerar Excel",
         "type": "n8n-nodes-base.spreadsheetFile",
         "typeVersion": 2,
@@ -1448,7 +1448,7 @@
         "parameters": {
           "jsCode": "const buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nreturn [{ json: {\n  media: buffer.toString('base64'),\n  fileName: 'relatorio-financeiro.xlsx',\n  mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',\n  caption: '📊 Seu relatório financeiro em Excel'\n} }];"
         },
-        "id": "b7efc920-a9c1-499e-9c94-53e4433690dd",
+        "id": "8f1f464b-a551-4432-823c-d394fb1416f2",
         "name": "Arquivo Excel",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1473,7 +1473,7 @@
             }
           }
         },
-        "id": "cfb1f195-2319-4431-8fe4-3c8ce011214a",
+        "id": "7b104d46-a26b-4d18-8e09-e3f35453732d",
         "name": "Gerar PDF",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
@@ -1486,7 +1486,7 @@
         "parameters": {
           "jsCode": "const buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nreturn [{ json: {\n  media: buffer.toString('base64'),\n  fileName: 'relatorio-financeiro.pdf',\n  mimetype: 'application/pdf',\n  caption: '📄 Seu relatório financeiro em PDF'\n} }];"
         },
-        "id": "f32ee382-801b-4298-85ce-b1b4af596ebf",
+        "id": "c6a6841f-ce1d-44fc-bf40-b2e30e2d59c2",
         "name": "Arquivo PDF",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1513,7 +1513,7 @@
           "jsonBody": "={{ JSON.stringify({ number: $('Contexto').first().json.jidEnvio, mediatype: 'document', mimetype: $json.mimetype, fileName: $json.fileName, media: $json.media, caption: $json.caption, delay: 1200 }) }}",
           "options": {}
         },
-        "id": "44d48fc9-a75a-4002-9451-2878a2834af4",
+        "id": "2e24023e-6b29-4491-9461-a74cf381ce7a",
         "name": "Enviar mídia",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
@@ -1526,13 +1526,162 @@
       {
         "parameters": {
           "operation": "get",
+          "key": "=fin:meta:{{ $('Contexto').first().json.numero }}",
+          "propertyName": "metaGuardada",
+          "options": {
+            "dotNotation": false
+          }
+        },
+        "id": "4d1aae55-51cc-48f0-ac15-2b80b3b7cd40",
+        "name": "Verificar meta",
+        "type": "n8n-nodes-base.redis",
+        "typeVersion": 1,
+        "position": [
+          1500,
+          300
+        ],
+        "credentials": {
+          "redis": {
+            "id": "d0IwNWXaXfLlaF4M",
+            "name": "Financeiro Redis"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "5510546b-f4bd-4860-8458-c7efe4dffa69",
+                "leftValue": "={{ (($json.metaGuardada || '') + '').length > 0 }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "39640235-d2c7-4c4e-a86d-dae2df72d91d",
+        "name": "Tem meta pendente?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1700,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const ctx = $('Contexto').first().json;\nconst target = Number($input.first().json.metaGuardada) || 0;\nconst tl = (ctx.texto || '').replace(/[R\\$.\\s]/g, '').trim().replace(',', '.');\nconst m = tl.match(/(\\d+(?:\\.\\d+)?)/);\nconst mensal = m ? parseFloat(m[1]) : NaN;\nconst nome = (ctx.pushName || '').split(' ')[0];\nconst brl = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 });\nif (!isFinite(mensal) || mensal <= 0) {\n  return [{ json: { text: `${nome ? nome + ', beleza! ' : ''}Quanto você consegue guardar por mês? (ex.: 200)` } }];\n}\nconst meses = Math.ceil(target / mensal);\nconst anos = meses >= 12 ? ` (${Math.floor(meses / 12)} ano${meses >= 24 ? 's' : ''} e ${meses % 12} meses)` : '';\nreturn [{ json: { text: `🎯 Boa, ${nome || 'pessoal'}! Guardando *${brl(mensal)}/mês*, você chega aos ${brl(target)} em *${meses} ${meses === 1 ? 'mês' : 'meses'}*${anos}. O segredo é separar assim que o salário cair — antes de gastar. Bora? 💪` } }];"
+        },
+        "id": "797b85bb-612e-43de-9dc8-6f0457f525d7",
+        "name": "Calcular meta",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1900,
+          380
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "delete",
+          "key": "=fin:meta:{{ $('Contexto').first().json.numero }}"
+        },
+        "id": "e48483a0-f18a-4340-b107-86d2eeb0327f",
+        "name": "Apagar meta",
+        "type": "n8n-nodes-base.redis",
+        "typeVersion": 1,
+        "position": [
+          2100,
+          460
+        ],
+        "credentials": {
+          "redis": {
+            "id": "d0IwNWXaXfLlaF4M",
+            "name": "Financeiro Redis"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "ffcc930b-5924-4cf9-b2ae-49fd4e05c036",
+                "leftValue": "={{ Number($json.dados.meta) > 0 }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "0f44aa2f-71bf-490a-be54-715086eab931",
+        "name": "Tem meta nova?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          3060,
+          20
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "set",
+          "key": "=fin:meta:{{ $('Contexto').first().json.numero }}",
+          "value": "={{ JSON.stringify($json.dados.meta) }}",
+          "valueIsJSON": false,
+          "expire": true,
+          "ttl": 3600
+        },
+        "id": "8048e1ec-314a-4ef5-a173-627094e157d1",
+        "name": "Salvar meta",
+        "type": "n8n-nodes-base.redis",
+        "typeVersion": 1,
+        "position": [
+          2860,
+          120
+        ],
+        "credentials": {
+          "redis": {
+            "id": "d0IwNWXaXfLlaF4M",
+            "name": "Financeiro Redis"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "get",
           "key": "=fin:draft:{{ $('Contexto').first().json.numero }}",
           "propertyName": "rascunho",
           "options": {
             "dotNotation": false
           }
         },
-        "id": "0f973095-13a1-430f-8a85-b3b23cd785e8",
+        "id": "7c439938-f19b-4699-8d71-6fb5a4484c8f",
         "name": "Verificar rascunho",
         "type": "n8n-nodes-base.redis",
         "typeVersion": 1,
@@ -1558,7 +1707,7 @@
             },
             "conditions": [
               {
-                "id": "ad725d21-face-4168-8f72-04a773c4c713",
+                "id": "7003995e-1881-4824-b184-b031d06c2180",
                 "leftValue": "={{ ($json.rascunho || '').toString().length > 0 }}",
                 "rightValue": "",
                 "operator": {
@@ -1572,7 +1721,7 @@
           },
           "options": {}
         },
-        "id": "153bab8a-08f4-4277-a90b-0b20232cdf94",
+        "id": "5cfda4e8-2309-474d-ac66-140367d0dce3",
         "name": "Tem rascunho?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
@@ -1585,7 +1734,7 @@
         "parameters": {
           "jsCode": "const ctx = $('Contexto').first().json;\nconst r = $input.first().json || {};\nconst draft = r.rascunho || '';\nlet gastos = [];\ntry { gastos = JSON.parse(draft); } catch (e) { gastos = []; }\nconst tl = (ctx.texto || '').trim().toLowerCase();\nlet acao = 'nao', idx = null, valor = null, tipoAjuste = null;\nif (/^(salvar|salve|confirmar|confirmo|ok)\\s*[!.?]*$/i.test(tl)) acao = 'salvar';\nelse if (/(cancelar|descartar|esquecer|nada)/.test(tl)) acao = 'cancelar';\nelse {\n  const mDel = tl.match(/(remover|tirar|apagar|deletar)\\s*(?:o |a |item )?(\\d+)/);\n  const mEd = tl.match(/(editar|edita|edite|ajustar|corrigir|mudar)\\s*(?:o |a |item )?(\\d+)\\s*(?:para|pra|de)?\\s*([\\d.,]+)/);\n  if (mDel) { acao = 'ajustar'; tipoAjuste = 'remover'; idx = parseInt(mDel[2], 10); }\n  else if (mEd) { acao = 'ajustar'; tipoAjuste = 'editar'; idx = parseInt(mEd[1], 10); valor = parseFloat(mEd[2].replace(/\\./g, '').replace(',', '.')); if (!isFinite(valor)) valor = null; }\n}\nif (acao === 'ajustar' && (idx == null || idx < 1 || idx > gastos.length)) { acao = 'nao'; tipoAjuste = null; idx = null; }\nreturn [{ json: { acao, tipoAjuste, idx, valor, gastos, numero: ctx.numero } }];"
         },
-        "id": "fff91ff4-190f-4adb-8aed-30d2abc7e1a6",
+        "id": "dd0ac1e7-4a65-469d-ac28-5463dbb44d6d",
         "name": "Tratar rascunho",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1608,7 +1757,7 @@
                   },
                   "conditions": [
                     {
-                      "id": "9b47d4e9-39bf-46ab-bc48-23f1d75512c4",
+                      "id": "4c18d0a4-cd16-4b02-afe0-19fb26ad9ec5",
                       "leftValue": "={{ $json.acao }}",
                       "rightValue": "salvar",
                       "operator": {
@@ -1632,7 +1781,7 @@
                   },
                   "conditions": [
                     {
-                      "id": "777b29cb-238f-41f0-954c-a2ca24e20869",
+                      "id": "c6e3ad1b-b85d-4628-b8b5-fe9ab9525729",
                       "leftValue": "={{ $json.acao }}",
                       "rightValue": "cancelar",
                       "operator": {
@@ -1656,7 +1805,7 @@
                   },
                   "conditions": [
                     {
-                      "id": "a12ac93e-8c9f-4523-b551-c31a027f935c",
+                      "id": "1ff6124e-c6d0-4b75-8ebe-ab7faafead25",
                       "leftValue": "={{ $json.acao }}",
                       "rightValue": "ajustar",
                       "operator": {
@@ -1677,7 +1826,7 @@
             "fallbackOutputKey": "nao"
           }
         },
-        "id": "61c9ef2b-57d6-487b-bf23-a6cb328f76da",
+        "id": "2a569fd6-abf3-42a3-95a6-89943e68e3e4",
         "name": "Rascunho?",
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3.2,
@@ -1694,7 +1843,7 @@
             "queryReplacement": "={{ [ $json.numero, JSON.stringify($json.gastos) ] }}"
           }
         },
-        "id": "720ab9f9-9507-4afc-86e5-ed2d1ba922db",
+        "id": "dedee43a-71e4-48fe-8e8b-d080c06a0dee",
         "name": "Gravar gastos (rascunho)",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -1713,7 +1862,7 @@
         "parameters": {
           "jsCode": "const r = $input.first().json || {};\nlet inseridos = r.inseridos || [];\nif (typeof inseridos === 'string') { try { inseridos = JSON.parse(inseridos); } catch (e) { inseridos = []; } }\nif (!Array.isArray(inseridos) || !inseridos.length) return [{ json: { text: '🤖 Nada foi salvo (lista vazia).' } }];\nconst brl = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nconst linhas = inseridos.map((g, i) => `${i + 1}. ${g.descricao} — *${brl(g.valor)}* (${g.categoria})${g.parcelas_total ? ` (${g.parcela_atual || 1}/${g.parcelas_total})` : ''}`).join('\\n');\nconst soma = inseridos.reduce((s, g) => s + Number(g.valor || 0), 0);\nreturn [{ json: { text: `✅ *Salvei seu print!*\\n\\n${linhas}\\n\\n💰 *Total (parcelas deste mês):* ${brl(soma)}` } }];"
         },
-        "id": "c93cc8ef-f536-46f4-9435-390d807f8e08",
+        "id": "8cced4da-e941-4206-9627-6c4d95d659c6",
         "name": "Confirmar salvos",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1727,7 +1876,7 @@
           "operation": "delete",
           "key": "=fin:draft:{{ $('Contexto').first().json.numero }}"
         },
-        "id": "024e5cae-eaa5-4417-890f-d6d7255bfa3c",
+        "id": "ee98b811-6dd0-4765-a26a-eff1d93f6bf4",
         "name": "Apagar rascunho",
         "type": "n8n-nodes-base.redis",
         "typeVersion": 1,
@@ -1746,7 +1895,7 @@
         "parameters": {
           "jsCode": "const nome = (($('Contexto').first().json.pushName) || '').split(' ')[0];\nreturn [{ json: { text: nome ? nome + ', beleza — descartei o rascunho do print. 😉' : 'Beleza, descartei o rascunho. 😉' } }];"
         },
-        "id": "f63aed81-0ef1-4328-8297-bc4072c1a5e2",
+        "id": "a978d646-ae34-440b-92d5-e7f943108185",
         "name": "Texto descartado",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1759,7 +1908,7 @@
         "parameters": {
           "jsCode": "const r = $input.first().json || {};\nconst gastos = JSON.parse(JSON.stringify(r.gastos || []));\nconst idx = r.idx; const tipo = r.tipoAjuste;\nif (tipo === 'remover' && gastos[idx - 1]) gastos.splice(idx - 1, 1);\nelse if (tipo === 'editar' && gastos[idx - 1] && r.valor != null) gastos[idx - 1].valor = r.valor;\nreturn [{ json: { gastos } }];"
         },
-        "id": "3c8c34b6-7bfa-45d2-8676-948db7a2d330",
+        "id": "b7f42bf7-3885-436b-a23b-8908053eaceb",
         "name": "Editar rascunho",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1777,7 +1926,7 @@
           "expire": true,
           "ttl": 1800
         },
-        "id": "9164d2ef-3310-44da-949e-66bbfaf312cc",
+        "id": "a2799ccd-1506-4db0-8583-c4d9a4ee4020",
         "name": "Guardar rascunho",
         "type": "n8n-nodes-base.redis",
         "typeVersion": 1,
@@ -1796,7 +1945,7 @@
         "parameters": {
           "jsCode": "const r = $input.first().json || {};\nconst gastos = r.gastos || [];\nconst ctx = $('Contexto').first().json;\nconst brl = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nconst nome = (ctx.pushName || '').split(' ')[0];\nif (!Array.isArray(gastos) || !gastos.length) {\n  return [{ json: { gastos, text: `📷 ${nome ? nome + ', não' : 'Não'} consegui identificar gastos na imagem. Tenta um print mais nítido. 😕` } }];\n}\nconst linhas = gastos.map((g, i) => `${i + 1}. ${g.descricao} — *${brl(g.valor)}* (${g.categoria})${g.parcelas_total ? ` (${g.parcela_atual || 1}/${g.parcelas_total})` : ''}`).join('\\n');\nconst total = gastos.reduce((s, g) => s + Number(g.valor || 0), 0);\nconst text = `📋 *Li seu print (rascunho):*\\n\\n${linhas}\\n\\n💰 *Total:* ${brl(total)}\\n\\nDiga *\"salvar\"* para confirmar, ou ajuste — ex.: *\"editar 2 para 50\"*, *\"remover 3\"* ou *\"cancelar\"*.`;\nreturn [{ json: { gastos, text } }];"
         },
-        "id": "28656169-8e02-49c8-9e64-e5387b713976",
+        "id": "93967004-8cc6-4639-a815-532fe2dd5fcf",
         "name": "Montar preview",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1813,7 +1962,7 @@
             "queryReplacement": "={{ [ $json.numero, $json.categoria ] }}"
           }
         },
-        "id": "1ad9d307-3908-4ebd-a4d2-5fea6addadc9",
+        "id": "7bd3fc8d-1fc6-4564-813b-472f45099d9f",
         "name": "Listar categoria",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -1832,7 +1981,7 @@
         "parameters": {
           "jsCode": "const base = $('Interpretar IA').first().json;\nlet items = $input.first().json.itens || [];\nif (typeof items === 'string') { try { items = JSON.parse(items); } catch (e) { items = []; } }\nconst ctx = $('Contexto').first().json;\nconst brl = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nconst cat = (base.categoria || '').trim();\nconst nome = (ctx.pushName || '').split(' ')[0];\nif (!items.length) return [{ json: { text: `${nome ? nome + ', não' : 'Não'} tenho nada cadastrado em *${cat || 'essa categoria'}*.` } }];\nconst linhas = items.map((g, i) => {\n  let suf = '';\n  if (g.parcelas_total) {\n    const atual = g.parcela_atual || 1;\n    const faltam = Math.max(0, g.parcelas_total - atual);\n    suf = ` · ${atual}/${g.parcelas_total} (faltam ${faltam})`;\n    if (g.valor_total) suf += ` · total ${brl(g.valor_total)}`;\n  } else if (g.recorrente) {\n    suf = ' · 🔁 mensal';\n  }\n  return `${i + 1}. ${g.descricao} — *${brl(g.valor)}*${suf} [${g.data}]`;\n}).join('\\n');\nconst total = items.reduce((s, g) => s + Number(g.valor || 0), 0);\nreturn [{ json: { text: `📂 *${cat}*\\n\\n${linhas}\\n\\n💰 *Total exibido:* ${brl(total)}\\n\\nQuer editar ou remover algum? Ex.: \"edita o 2 para 45\" ou \"remove o 3\".` } }];"
         },
-        "id": "78b35d50-4b02-4341-ba4b-4e7521ab4a44",
+        "id": "4f96216a-a32a-4bc9-abd1-c13e5551de8c",
         "name": "Responder lista",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1849,7 +1998,7 @@
             "queryReplacement": "={{ [ $json.numero, $json.alvo, $json.categoria, $json.novaDescricao, $json.novoValor, $json.novaCategoria, $json.novaData ] }}"
           }
         },
-        "id": "e508aef5-e1d2-4c6d-9a6e-02d6d5683baf",
+        "id": "bfff7a25-450c-4b24-b1d8-2e4fbce812cc",
         "name": "Editar gasto",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -1868,7 +2017,7 @@
         "parameters": {
           "jsCode": "const r = $input.first().json || {};\nconst alvo = $('Interpretar IA').first().json.alvo || '';\nconst ctx = $('Contexto').first().json;\nconst brl = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nconst nome = (ctx.pushName || '').split(' ')[0];\nif (!r.achou) return [{ json: { text: `${nome ? nome + ', não' : 'Não'} encontrei *\"${alvo}\"*. Tenta descrever melhor, ex.: \"edita a netflix para 49\".` } }];\nconst g = r.alterado;\nreturn [{ json: { text: `✏️ *Atualizado:* ${g.descricao} — *${brl(g.valor)}* (${g.categoria}) em ${g.data}${g.parcelas_total ? ` · ${g.parcela_atual || 1}/${g.parcelas_total}` : ''}` } }];"
         },
-        "id": "3a6bb8c2-f374-4ff0-91b0-1522eac61944",
+        "id": "445ab648-a9ad-4bf7-a188-f340d6211851",
         "name": "Responder edição",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1885,7 +2034,7 @@
             "queryReplacement": "={{ [ $json.numero, $json.alvo, $json.categoria ] }}"
           }
         },
-        "id": "99b7678b-017f-458c-9ec5-5934b491534e",
+        "id": "f1d43686-71d0-4104-b55b-20330a1295be",
         "name": "Remover gasto",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -1904,7 +2053,7 @@
         "parameters": {
           "jsCode": "const r = $input.first().json || {};\nconst alvo = $('Interpretar IA').first().json.alvo || '';\nconst ctx = $('Contexto').first().json;\nconst brl = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nconst nome = (ctx.pushName || '').split(' ')[0];\nif (!r.achou) return [{ json: { text: `${nome ? nome + ', não' : 'Não'} achei *\"${alvo}\"*. Tenta descrever melhor, ex.: \"remove a netflix\".` } }];\nconst g = r.removido;\nreturn [{ json: { text: `🗑️ *Removido:* ${g.descricao} — *${brl(g.valor)}* (${g.categoria}).` } }];"
         },
-        "id": "c57300e7-9b5d-4248-b661-6d96d07c0797",
+        "id": "2820bc16-5c43-4c0d-8c9d-edb38754ce84",
         "name": "Responder remoção",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -2046,7 +2195,92 @@
           ],
           [
             {
+              "node": "Verificar meta",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verificar meta": {
+        "main": [
+          [
+            {
+              "node": "Tem meta pendente?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tem meta pendente?": {
+        "main": [
+          [
+            {
+              "node": "Calcular meta",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
               "node": "Verificar rascunho",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calcular meta": {
+        "main": [
+          [
+            {
+              "node": "Enviar texto",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Apagar meta",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalizar resposta": {
+        "main": [
+          [
+            {
+              "node": "Tem meta nova?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tem meta nova?": {
+        "main": [
+          [
+            {
+              "node": "Salvar meta",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Formatar (1-Groq)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Salvar meta": {
+        "main": [
+          [
+            {
+              "node": "Formatar (1-Groq)",
               "type": "main",
               "index": 0
             }
@@ -2598,17 +2832,6 @@
           ]
         ]
       },
-      "Normalizar resposta": {
-        "main": [
-          [
-            {
-              "node": "Formatar (1-Groq)",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Dados relatório": {
         "main": [
           [
@@ -2910,7 +3133,7 @@
             ]
           }
         },
-        "id": "1b5eb50d-84a0-4274-af61-80234383a566",
+        "id": "07f9159d-ee49-4dd1-b2ad-6be0ab3b79e3",
         "name": "Toda semana (domingo 19h)",
         "type": "n8n-nodes-base.scheduleTrigger",
         "typeVersion": 1.2,
@@ -2925,7 +3148,7 @@
           "query": "SELECT\n  u.numero,\n  COALESCE(u.nome,'') AS nome,\n  COALESCE(u.jid_envio, u.numero) AS destino,\n  COALESCE((SELECT SUM(valor) FROM gastos g WHERE g.numero=u.numero AND g.tipo='despesa' AND g.data >= CURRENT_DATE - INTERVAL '6 days'),0) AS total_semana,\n  COALESCE((SELECT SUM(valor) FROM gastos g WHERE g.numero=u.numero AND g.tipo='despesa' AND ((g.parcelas_total IS NULL AND g.recorrente = FALSE AND date_trunc('month', g.data) = date_trunc('month', CURRENT_DATE)) OR (g.recorrente = TRUE AND g.ativo = TRUE AND date_trunc('month', g.data) <= date_trunc('month', CURRENT_DATE)) OR (g.parcelas_total IS NOT NULL AND g.ativo = TRUE AND date_trunc('month', g.data) <= date_trunc('month', CURRENT_DATE)))),0) AS total_mes,\n  COALESCE((SELECT json_agg(json_build_object('categoria',categoria,'total',soma) ORDER BY soma DESC)\n     FROM (SELECT categoria, SUM(valor) AS soma FROM gastos WHERE numero=u.numero AND tipo='despesa' AND data >= CURRENT_DATE - INTERVAL '6 days' GROUP BY categoria) x),'[]'::json) AS por_categoria\nFROM usuarios u\nWHERE u.ativo = TRUE AND u.resumo_semanal = TRUE\nORDER BY u.numero;",
           "options": {}
         },
-        "id": "8aef5fd3-5775-4d49-9877-9344714144f3",
+        "id": "89b26aab-af73-463d-8d8d-2d208c492c28",
         "name": "Resumo por usuário",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -2944,7 +3167,7 @@
         "parameters": {
           "jsCode": "const brl = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nconst linhas = $input.all().map((i) => {\n  const u = i.json;\n  const nome = (u.nome || '').split(' ')[0];\n  const ola = nome ? `Olá, ${nome}!` : 'Olá!';\n  const total = Number(u.total_semana || 0);\n  const cats = Array.isArray(u.por_categoria) ? u.por_categoria : JSON.parse(u.por_categoria || '[]');\n  if (total === 0) {\n    return { json: { numero: (u.destino || u.numero), text: `📅 *Resumo da semana*\\n\\n${ola} Você não registrou nenhum gasto nos últimos 7 dias. Bora anotar tudo essa semana? 😉` } };\n  }\n  const topo = cats.slice(0, 5).map((c, idx) => `${idx + 1}. ${c.categoria}: *${brl(c.total)}*`).join('\\n');\n  const maior = cats[0];\n  const text = `📅 *Resumo da semana*\\n\\n${ola} Aqui está o que você gastou nos últimos 7 dias:\\n\\n💰 *Total:* ${brl(total)}\\n📈 *No mês:* ${brl(u.total_mes)}\\n\\n🔝 *Maiores gastos:*\\n${topo}\\n\\n💡 Dica: o maior peso foi *${maior ? maior.categoria : '-'}*. Me chame para ver como economizar! 🚀`;\n  return { json: { numero: (u.destino || u.numero), text } };\n});\nreturn linhas;"
         },
-        "id": "b0c4a8b1-9ab3-463b-abc6-b5663556bfda",
+        "id": "0755998b-fd0c-4c6e-adad-f0850327604b",
         "name": "Montar mensagem",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -2971,7 +3194,7 @@
           "jsonBody": "={{ JSON.stringify({ number: $json.numero, text: $json.text, delay: 1500 }) }}",
           "options": {}
         },
-        "id": "ff9952a0-6341-4719-adc2-9722d6c6fb6c",
+        "id": "baf5a302-87d9-44f3-8d5d-d6d47ddbaaf5",
         "name": "Enviar resumo",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
@@ -3040,7 +3263,7 @@
             ]
           }
         },
-        "id": "7abc7097-8d97-441e-b2aa-2c46bc7f460a",
+        "id": "3e3c6008-9405-4b46-a8bc-ed270fa84d12",
         "name": "Todo dia 1 (09h)",
         "type": "n8n-nodes-base.scheduleTrigger",
         "typeVersion": 1.2,
@@ -3055,7 +3278,7 @@
           "query": "SELECT\n  u.numero,\n  COALESCE(u.nome,'') AS nome,\n  COALESCE(u.jid_envio, u.numero) AS destino,\n  to_char(date_trunc('month', CURRENT_DATE - INTERVAL '1 month'), 'TMMonth/YYYY') AS mes_ref,\n  COALESCE((SELECT SUM(valor) FROM gastos g WHERE g.numero=u.numero AND g.tipo='despesa' AND date_trunc('month',g.data)=date_trunc('month',CURRENT_DATE - INTERVAL '1 month')),0) AS total_mes,\n  COALESCE((SELECT json_agg(json_build_object('categoria',categoria,'total',soma) ORDER BY soma DESC)\n     FROM (SELECT categoria, SUM(valor) AS soma FROM gastos WHERE numero=u.numero AND tipo='despesa' AND date_trunc('month',data)=date_trunc('month',CURRENT_DATE - INTERVAL '1 month') GROUP BY categoria) x),'[]'::json) AS por_categoria\nFROM usuarios u\nWHERE u.ativo = TRUE AND u.resumo_semanal = TRUE\nORDER BY u.numero;",
           "options": {}
         },
-        "id": "96c594fe-4ad2-44f9-9c17-d1b3633a8113",
+        "id": "6f70d1ef-9b98-4efd-b821-490f1cb2295e",
         "name": "Resumo mensal por usuário",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -3074,7 +3297,7 @@
         "parameters": {
           "jsCode": "const brl = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nconst linhas = $input.all().map((i) => {\n  const u = i.json;\n  const nome = (u.nome || '').split(' ')[0];\n  const ola = nome ? `Olá, ${nome}!` : 'Olá!';\n  const mes = u.mes_ref || 'mês passado';\n  const total = Number(u.total_mes || 0);\n  const cats = Array.isArray(u.por_categoria) ? u.por_categoria : JSON.parse(u.por_categoria || '[]');\n  if (total === 0) {\n    return { json: { numero: (u.destino || u.numero), text: `📆 *Fechamento de ${mes}*\\n\\n${ola} Você não registrou gastos em ${mes}. Que tal começar o mês novo anotando tudo? 😉` } };\n  }\n  const ranking = cats.slice(0, 7).map((c, idx) => `${idx + 1}. ${c.categoria}: *${brl(c.total)}*`).join('\\n');\n  const maior = cats[0];\n  const media = total / 30;\n  return { json: { numero: (u.destino || u.numero), text: `📆 *Fechamento de ${mes}*\\n\\n${ola} Veja como foi seu mês:\\n\\n💰 *Total gasto:* ${brl(total)}\\n📊 *Média diária:* ${brl(media)}\\n\\n🔝 *Onde foi seu dinheiro:*\\n${ranking}\\n\\n💡 A maior fatia foi *${maior ? maior.categoria : '-'}*. Bora começar o mês novo no controle? Me manda \"onde posso economizar?\" 🚀` } };\n});\nreturn linhas;"
         },
-        "id": "a4fe9575-f886-458b-8b0e-879b35f4bbae",
+        "id": "dade04f6-e721-4eac-b993-da15fedac2a5",
         "name": "Montar mensagem mensal",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -3101,7 +3324,7 @@
           "jsonBody": "={{ JSON.stringify({ number: $json.numero, text: $json.text, delay: 1500 }) }}",
           "options": {}
         },
-        "id": "dddd79d6-73bb-43f5-8df9-5b9995448add",
+        "id": "eee58591-c7e4-41bf-bf3b-a878af4698a5",
         "name": "Enviar resumo mensal",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
@@ -3170,7 +3393,7 @@
             ]
           }
         },
-        "id": "5887bde3-d87a-4735-9e92-41ffdca53c9a",
+        "id": "76ac49df-5bbf-4ae9-b877-8ebf4d4f8cf1",
         "name": "Todo dia 1 (06h)",
         "type": "n8n-nodes-base.scheduleTrigger",
         "typeVersion": 1.2,
@@ -3185,7 +3408,7 @@
           "query": "UPDATE gastos SET parcela_atual = parcela_atual + 1 WHERE parcelas_total IS NOT NULL AND ativo = TRUE;",
           "options": {}
         },
-        "id": "060cdfb3-e778-48bc-baac-84c10c6e6ee4",
+        "id": "19142639-5d2a-4bbd-b3eb-537ef5a13d36",
         "name": "Avancar parcelas",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
@@ -3206,7 +3429,7 @@
           "query": "UPDATE gastos SET ativo = FALSE WHERE parcelas_total IS NOT NULL AND parcela_atual > parcelas_total;",
           "options": {}
         },
-        "id": "01825bea-3cfc-4193-bbc5-ae54064644ee",
+        "id": "fddc3107-db62-4342-9298-6b03189113f0",
         "name": "Concluir parcelas",
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.4,
